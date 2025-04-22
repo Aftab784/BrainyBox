@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { UserModel, ContentModel, LinksModel } from './db';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-// import {  } from './middlewares';
+import { usermiddleware } from "./middlewares";
 
 
 const app = express()
@@ -106,16 +106,62 @@ app.post("/api/v1/signin", async (req, res) => {
   }
 });
 
-app.post("/api/v1/content", (req,res) => {
+interface ContentRequestBody {
+  link: string;
+  type: string;
+  title: string;
+}
 
+interface CustomRequest extends express.Request {
+  userId?: string;
+}
+
+app.post("/api/v1/content", usermiddleware, async (req: CustomRequest, res: express.Response) => {
+  const { link, type, title } = req.body as ContentRequestBody;
+
+  await ContentModel.create({
+    link,
+    type,
+    title,
+    userId: req.userId,
+    tags: []
+  });
+
+  res.json({
+    message: "Content Added"
+  });
+
+});
+
+app.get("/api/v1/content", usermiddleware,async (req:CustomRequest,res: express.Response) => {
+  const userId = req.userId;
+  const content = await ContentModel.find({
+    userId: userId
+  }).populate("userId", "username")
+
+  res.json({
+    content
+})
 })
 
-app.get("/api/v1/content", (req,res) => {
+app.delete("/api/v1/content",usermiddleware, async (req: CustomRequest,res) => {
+  const contentId = req.body.contentId;
 
-})
+ const result = await ContentModel.deleteMany({
+    contentId,
+    userId: req.userId
+  })
 
-app.delete("/api/v1/content", (req,res) => {
+  if(result.deletedCount === 0 ){
+    res.status(404).json({
+      message: "No content found to delete"
+    })
+  }
 
+  res.json({
+    message: "Deleted"
+  })
+  
 })
 
 app.post("/api/v1/brain/share", (req,res) => {
