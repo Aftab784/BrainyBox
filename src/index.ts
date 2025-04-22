@@ -71,11 +71,40 @@ app.post("/api/v1/signup",async (req,res) => {
   }
 })
 
+app.post("/api/v1/signin", async (req, res) => {
+  const { email, password } = req.body;
 
+  try {
+    const response = await UserModel.findOne({
+       email: email 
+      });
 
-app.post("/api/v1/signin", (req,res) => {
+    if (!response) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
 
-})
+    const matchedPassword = await bcrypt.compare(password, response.password as string);
+
+    if (!matchedPassword) {
+      res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign({
+       id: response._id 
+      }, process.env.JWT_USER_SECRET as string, { expiresIn: "1h" });
+
+    res.status(200).json({
+       message: "Signed in successfully", 
+       token
+       });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+       message: "Server error"
+       });
+  }
+});
 
 app.post("/api/v1/content", (req,res) => {
 
