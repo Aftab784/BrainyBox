@@ -1,10 +1,15 @@
-import { Button } from "@/components/ui/button"
+import { Button, ButtonSecondary } from "./components/ui/button"
+import {Plus} from "lucide-react"
 
-function App() {
+
+const App = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-svh">
-      <Button>Click me</Button>
+    
+    <div className="flex justify-center items-center w-full h-screen ">
+      <Button className="bg-purple-600 hover:bg-purple-700 text-white" size="lg"> <Plus/> Click me</Button>
     </div>
+
+  
   )
 }
 

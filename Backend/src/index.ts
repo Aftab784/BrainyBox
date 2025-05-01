@@ -6,7 +6,7 @@ import { UserModel, ContentModel, LinksModel } from './db';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { usermiddleware } from "./middlewares";
-
+import { random } from "./utils";
 
 const app = express()
 app.use(express.json());
@@ -92,7 +92,7 @@ app.post("/api/v1/signin", async (req, res) => {
 
     const token = jwt.sign({
        id: response._id 
-      }, process.env.JWT_USER_SECRET as string, { expiresIn: "1h" });
+      }, process.env.JWT_USER_SECRET as string);
 
     res.status(200).json({
        message: "Signed in successfully", 
@@ -144,7 +144,7 @@ app.get("/api/v1/content", usermiddleware,async (req:CustomRequest,res: express.
 })
 })
 
-app.delete("/api/v1/content",usermiddleware, async (req: CustomRequest,res) => {
+app.delete("/api/v1/content", usermiddleware, async (req: CustomRequest,res) => {
   const contentId = req.body.contentId;
 
  const result = await ContentModel.deleteMany({
@@ -164,11 +164,88 @@ app.delete("/api/v1/content",usermiddleware, async (req: CustomRequest,res) => {
   
 })
 
-app.post("/api/v1/brain/share", (req,res) => {
+app.post("/api/v1/brainybox/share",usermiddleware, async (req:CustomRequest,res: express.Response) => {
+  try{
+  const { share } = req.body;
+  
+    if (share) {
+      const existingLink = await LinksModel.findOne({
+        userId: req.userId
+      });
 
-})
+      if (existingLink) {
+        res.json({
+          hash: existingLink.hash
+        });
+        return;
+      }
 
-app.get("/api/v1/brain/:shareLink", (req,res) => {
+      const hash = random(10);
+      await LinksModel.create({
+        userId: req.userId,
+        hash: hash
+      });
+
+      res.json({
+        hash
+      });
+    } else {
+      const result = await LinksModel.deleteOne({
+        userId: req.userId
+      });
+
+      if (result.deletedCount === 0) {
+        res.status(404).json({
+          message: "No link found to remove"
+        });
+        return;
+      }
+
+      res.json({
+        message: "Removed link"
+      });
+    }
+  }catch(err){
+    console.log(err)
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+});
+
+app.get("/api/v1/brainybox/~:shareLink",async (req:CustomRequest,res: express.Response) => {
+  const hash = req.params.shareLink;
+
+ const link =  await LinksModel.findOne({
+    hash
+  });
+
+  if(!link){
+    res.status(411).json({
+      message: "Sorry Incorrect Input"
+    })
+    return;
+  }
+  
+  const content = await ContentModel.findOne({
+    userId: link.userId
+  }) 
+
+  const user = await UserModel.findOne({
+    _id: link.userId
+  })
+
+  if(!user){
+    res.status(411).json({
+      message: "User not found, error should ideally not happen"
+    })
+    return;
+  }
+
+  res.json({
+    username: user.username,
+    content: content
+  })
 
 })
 
