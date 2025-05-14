@@ -180,7 +180,7 @@ app.post("/api/v1/brainybox/share",usermiddleware, async (req:CustomRequest,res:
         return;
       }
 
-      const hash = random(10);
+      const hash = random(18);
       await LinksModel.create({
         userId: req.userId,
         hash: hash
@@ -254,9 +254,25 @@ interface MainApp {
 }
 
 const main: MainApp = async (app) => {
+  try {
+
+    const start = Date.now(); 
+
     await mongoose.connect(process.env.MONGO_URL as string);
-    app.listen(2000);
-    console.log("Port is listening on 2000");
+
+    const end = Date.now();
+
+    const timeTaken = ((end - start ) / 1000).toFixed(3)
+
+    console.log(`✅ MongoDB connected in ${timeTaken}s`);
+
+    app.listen(2000, ()=> {
+      console.log("🚀 Server is running on port 2000");
+    })
+  }catch(err) {
+    console.error("❌ Failed to connect to MongoDB:", err);
+        process.exit(1); // Exit the app if DB connection fails
+  }
 };
 
 main(app)
