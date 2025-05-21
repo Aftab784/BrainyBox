@@ -2,10 +2,25 @@ import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "./Card";
 import { 
   LayoutDashboard, Layout, TrendingUp, Hash,
-  ThumbsUp, MessageCircle, Bookmark, Share2, PlusCircle, Tag
+  ThumbsUp, MessageCircle, Bookmark, Share2, PlusCircle, Tag,
+  Mail, MessageSquare, Send
 } from "lucide-react";
 import { WelcomeGuide } from './Welcome';
 import { SidebarTrigger } from './app-sidebar';
+import { Button } from './Button';
+import { Input } from './input';
+import { Label } from './label';
+import { Textarea } from './textarea';
+import { Illustration } from '@/assets/illustration';
+import { toast } from 'react-toastify';
+
+
+// Define ContentItem interface for type safety
+interface ContentItem {
+  platform: string;
+  tags?: string[];
+  // Add other fields as needed, e.g. title, url, etc.
+}
 
 // Update PlatformStats interface
 interface PlatformStats {
@@ -68,43 +83,80 @@ export function StatsCard({ title, value, icon, gradient }: StatsCardProps) {
 // Add new interface for guide cards
 interface GuideCardProps {
   title: string;
-  description: string;
+  description: React.ReactNode;
   type: 'guide' | 'blog';
   icon: React.ReactNode;
 }
 
-// Add GuideCard component
+// Update the GuideCard component for a cleaner look
 function GuideCard({ title, description, type, icon }: GuideCardProps) {
   return (
-    <Card className="bg-white p-6 hover:shadow-md transition-shadow border border-gray-100">
-      <CardHeader className="flex flex-row items-start gap-4 pb-4">
-        <div className="p-3 rounded-lg bg-purple-50">
-          {icon}
+    <div className="bg-white rounded-xl p-6 hover:shadow-md transition-all duration-200">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-start gap-4">
+          <div className="p-2.5 rounded-lg bg-purple-50">
+            {icon}
+          </div>
+          <div className="space-y-2">
+            <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100/50 text-purple-700">
+              {type === 'guide' ? 'Getting Started' : 'Tips & Tricks'}
+            </span>
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          </div>
         </div>
-        <div>
-          <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700 mb-2 inline-block">
-            {type === 'guide' ? 'How to Use' : 'Blog Post'}
-          </span>
-          <CardTitle className="text-xl font-semibold text-gray-900">
-            {title}
-          </CardTitle>
+        <div className="text-gray-600 space-y-3">
+          {description}
         </div>
-      </CardHeader>
-      <CardContent className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">
-        {description}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
-// Add interface for content items
-interface ContentItem {
-  id: string;
-  platform: string;
-  title: string;
-  link: string;
-  tags?: string[];
-}
+// Update the guides data
+const guides = [
+  {
+    title: "Why Use BrainBox?",
+    description: (
+      <div className="space-y-4">
+        <p className="text-sm">Streamline your digital life with BrainBox - your all-in-one content hub.</p>
+        <ul className="space-y-2">
+          <li className="flex items-start gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
+            <span className="text-sm">Save time by instantly finding key content</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
+            <span className="text-sm">Never lose valuable resources again</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
+            <span className="text-sm">Build your personal knowledge base</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
+            <span className="text-sm">Connect ideas across tools and platforms</span>
+          </li>
+        </ul>
+        <p className="text-sm font-medium text-purple-600">Organize smarter, not harder.</p>
+      </div>
+    ),
+    type: 'blog' as const,
+    icon: <Layout className="w-5 h-5 text-purple-600" />
+  },
+  {
+    title: "Getting Started with BrainBox",
+    description: `BrainBox helps you save and organize content from any platform in one place.
+
+• Save content from your favorite platforms
+• Organize with smart tagging
+• Quick search and filter
+• Track your knowledge growth
+
+Get started in seconds - just click "Add Content" and start building your digital library.`,
+    type: 'guide' as const,
+    icon: <LayoutDashboard className="w-6 h-6 text-purple-600" />
+  }
+];
 
 export function Dashboard() {
   const [platformCounts, setPlatformCounts] = useState<Record<string, number>>({
@@ -202,56 +254,62 @@ export function Dashboard() {
       name: 'Eraser',
       count: platformCounts.eraser || 0,
       gradient: 'bg-gradient-to-r from-[#EC2C40] to-[#00A9E5]',
-      icon: <svg className="w-4 h-4 text-white" /* Eraser SVG */ />
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6 text-white">
+          <path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L21 10C21.5 10.5 21.5 11.5 21 12L11 22" />
+          <path d="M7 20L17 10" />
+        </svg>
+      )
     },
     {
       id: 'excalidraw',
       name: 'Excalidraw',
       count: platformCounts.excalidraw || 0,
       gradient: 'bg-gradient-to-r from-[#6965db] to-[#8783ff]',
-      icon: <svg className="w-4 h-4 text-white" /* Excalidraw SVG */ />
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+          <path d="M18.277 6.321L12.375.419a1.429 1.429 0 0 0-2.021 0L4.452 6.321a1.429 1.429 0 0 0 0 2.021l5.902 5.902a1.429 1.429 0 0 0 2.021 0l5.902-5.902a1.429 1.429 0 0 0 0-2.021zM2.42 13.694l-1.17 1.17a1.429 1.429 0 0 0 0 2.021l5.902 5.902a1.429 1.429 0 0 0 2.021 0l1.17-1.17L4.44 15.714zm19.16 0l-5.902 5.902 1.17 1.17a1.429 1.429 0 0 0 2.021 0l5.902-5.902a1.429 1.429 0 0 0 0-2.021l-1.17-1.17z" />
+        </svg>
+      )
     }
   ];
 
-  // Add guides and blog posts
-  const guides = [
-    {
-      title: "Getting Started with BrainBox",
-      description: `BrainBox is your personal knowledge management system designed to help you:
+  const [email, setEmail] = React.useState('');
+  const [message, setMessage] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-• Organize content from different platforms in one place
-• Build a searchable library of valuable information
-• Create connections between different pieces of content
-• Track engagement and impact of saved content
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-Quick Start:
-1. Click "Add Content" to save from your favorite platforms
-2. Use tags to organize and find content easily
-3. Track engagement metrics to see what resonates
-4. Build your second brain systematically`,
-      type: 'guide' as const,
-      icon: <LayoutDashboard className="w-6 h-6 text-purple-600" />
-    },
-    {
-      title: "Building Your Second Brain",
-      description: `Learn how to effectively build your digital knowledge base:
+    try {
+      // Validate inputs
+      if (!email.trim() || !message.trim()) {
+        toast.error('Please fill in all fields');
+        return;
+      }
 
-• Choose what content to save (quality over quantity)
-• Organize content using the PARA method:
-  - Projects: Current initiatives
-  - Areas: Ongoing responsibilities
-  - Resources: Topics of interest
-  - Archives: Inactive items
+      // For demonstration, just show success toast
+      toast.success('Message sent successfully!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
 
-Tips:
-• Review and organize weekly
-• Add your own insights to saved content
-• Share and connect with others
-• Use tags consistently`,
-      type: 'blog' as const,
-      icon: <Layout className="w-6 h-6 text-purple-600" />
+      // Reset form
+      setEmail('');
+      setMessage('');
+      
+    } catch (error) {
+      toast.error('Failed to send message. Please try again.');
+      console.error('Contact form error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -302,43 +360,126 @@ Tips:
           </div>
         </div>
 
-        {/* Resources Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Quick Actions
-              </h2>
-              <div className="space-y-3">
-                <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-colors">
-                  <PlusCircle className="w-5 h-5 text-purple-600" />
-                  <span>Add New Content</span>
-                </button>
-                <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-colors">
-                  <Tag className="w-5 h-5 text-purple-600" />
-                  <span>Manage Tags</span>
-                </button>
-                <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-colors">
-                  <Share2 className="w-5 h-5 text-purple-600" />
-                  <span>Share Collection</span>
-                </button>
-              </div>
+        {/* Three Column Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-0">
+          {/* Quick Actions Column */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Quick Actions
+            </h2>
+            <div className="space-y-3">
+              <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-colors">
+                <PlusCircle className="w-5 h-5 text-purple-600" />
+                <span>Add New Content</span>
+              </button>
+              <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-colors">
+                <Tag className="w-5 h-5 text-purple-600" />
+                <span>Manage Tags</span>
+              </button>
+              <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-colors">
+                <Share2 className="w-5 h-5 text-purple-600" />
+                <span>Share Collection</span>
+              </button>
             </div>
           </div>
 
-          {/* Guides Grid */}
-          <div className="lg:col-span-2">
+          {/* Blog Posts Column */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Guides & Resources
+              Blog Posts
             </h2>
-            <div className="grid grid-cols-1 gap-6">
-              {guides.map((guide) => (
+            <div className="space-y-6">
+              {guides.filter(g => g.type === 'blog').map((guide) => (
                 <GuideCard
                   key={guide.title}
                   {...guide}
                 />
               ))}
+            </div>
+          </div>
+
+          {/* Guides Column */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Guides & Resources
+            </h2>
+            <div className="space-y-6">
+              {guides.filter(g => g.type === 'guide').map((guide) => (
+                <GuideCard
+                  key={guide.title}
+                  {...guide}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Section */}
+      <div className="mt-16 bg-gradient-to-br from-[#881ae5] to-purple-700 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+            {/* Contact Info */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-white/10">
+                  <MessageSquare className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-white">Get in Touch</h2>
+                  <p className="text-white/80 mt-2 text-lg">Have feedback or questions? Let me know!</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4 mt-8">
+                <div className="flex items-center gap-3 text-white/80">
+                  <Mail className="w-5 h-5" />
+                  <span>support@brainybox.com</span>
+                </div>
+                {/* Add illustration below email */}
+                <div className="mt-0  opacity-80">
+                  <Illustration />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Form */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-white text-sm">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="message" className="text-white text-sm">Message</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Your message here..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 min-h-[160px]"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-white text-[#881ae5] hover:bg-white/90 transition-colors font-medium"
+                  disabled={isSubmitting}
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                </Button>
+              </form>
             </div>
           </div>
         </div>

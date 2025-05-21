@@ -15,6 +15,8 @@ import { Dashboard } from "./components/ui/DashBoard";
 import { WelcomeGuide } from './components/ui/Welcome';
 import { ShareContentModal } from './components/ui/ShareContent';
 import { BookOpen, LayoutGrid, LayoutList } from 'lucide-react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface AppProps {
   children?: React.ReactNode;
@@ -156,154 +158,157 @@ const App: React.FC<AppProps> = ({ children }) => {
 
   // Update the layout section
   return (
-    <SidebarProvider defaultOpen={!isMobile}>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar
-          onFilterChange={handleFilterChange}
-          activeFilter={activeFilter}
-          onDashboardClick={handleDashboardClick}
-          isDashboardActive={isDashboardView}
-          onContentLibraryClick={handleContentLibraryClick}
-        />
-        <SidebarInset className="flex-1">
-          {isDashboardView ? (
-            <Dashboard />
-          ) : (
-            <div className="min-h-screen bg-gray-50">
-              {/* Updated Header Section */}
-              <div className="bg-gradient-to-br from-[#881ae5] to-purple-700 text-white">
-                <div className="max-w-7xl mx-auto px-4 py-4">
-                  <div className="flex items-center justify-between gap-4">
-                    {/* Left Section */}
-                    <div className="flex items-center gap-3">
-                      <SidebarTrigger className="md:hidden text-white" />
-                      <h1 className="text-xl font-bold truncate">Content Library</h1>
-                    </div>
-
-                    {/* Middle Section - Layout Controls (Desktop Only) */}
-                    {!isMobile && (
-                      <div className="hidden md:flex items-center gap-2">
-                        <div className="flex bg-white/10 rounded-lg overflow-hidden">
-                          <button
-                            className={`px-2.5 py-1.5 flex items-center gap-1.5 text-sm ${
-                              layout === "grid"
-                                ? "bg-white/20 text-white"
-                                : "text-white/80 hover:bg-white/10"
-                            }`}
-                            onClick={() => setLayout("grid")}
-                          >
-                            <LayoutGrid className="w-4 h-4" />
-                            Grid
-                          </button>
-                          <button
-                            className={`px-2.5 py-1.5 flex items-center gap-1.5 text-sm ${
-                              layout === "list"
-                                ? "bg-white/20 text-white"
-                                : "text-white/80 hover:bg-white/10"
-                            }`}
-                            onClick={() => setLayout("list")}
-                          >
-                            <LayoutList className="w-4 h-4" />
-                            List
-                          </button>
-                        </div>
-
-                        {layout === "grid" && (
-                          <div className="flex bg-white/10 rounded-lg overflow-hidden">
-                            {[2, 3].map((col) => (
-                              <button
-                                key={col}
-                                className={`px-3 py-1.5 text-sm ${
-                                  columns === col
-                                    ? "bg-white/20 text-white"
-                                    : "text-white/80 hover:bg-white/10"
-                                }`}
-                                onClick={() => setColumns(col)}
-                              >
-                                {col}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+    <>
+      <SidebarProvider defaultOpen={!isMobile}>
+        <div className="flex min-h-screen w-full">
+          <AppSidebar
+            onFilterChange={handleFilterChange}
+            activeFilter={activeFilter}
+            onDashboardClick={handleDashboardClick}
+            isDashboardActive={isDashboardView}
+            onContentLibraryClick={handleContentLibraryClick}
+          />
+          <SidebarInset className="flex-1">
+            {isDashboardView ? (
+              <Dashboard />
+            ) : (
+              <div className="min-h-screen bg-gray-50">
+                {/* Updated Header Section */}
+                <div className="bg-gradient-to-br from-[#881ae5] to-purple-700 text-white">
+                  <div className="max-w-7xl mx-auto px-4 py-4">
+                    <div className="flex items-center justify-between gap-4">
+                      {/* Left Section */}
+                      <div className="flex items-center gap-3">
+                        <SidebarTrigger className="md:hidden text-white" />
+                        <h1 className="text-xl font-bold truncate">Content Library</h1>
                       </div>
-                    )}
 
-                    {/* Right Section */}
-                    <div className="flex items-center gap-2">
-                      <Button
-                        onClick={() => setIsShareModalOpen(true)}
-                        className="bg-white/10 text-white hover:bg-white/20 transition-colors h-9"
-                        size="sm"
-                      >
-                        <ShareIcon className="w-4 h-4" />
-                        <span className="ml-1.5 hidden sm:inline">Share</span>
-                      </Button>
-                      
-                      <Button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="bg-white text-[#881ae5] hover:bg-white/90 transition-colors h-9"
-                        size="sm"
-                      >
-                        <PlusIcon className="w-4 h-4" />
-                        <span className="ml-1.5 hidden sm:inline">Add Content</span>
-                      </Button>
+                      {/* Middle Section - Layout Controls (Desktop Only) */}
+                      {!isMobile && (
+                        <div className="hidden md:flex items-center gap-2">
+                          <div className="flex bg-white/10 rounded-lg overflow-hidden">
+                            <button
+                              className={`px-2.5 py-1.5 flex items-center gap-1.5 text-sm ${
+                                layout === "grid"
+                                  ? "bg-white/20 text-white"
+                                  : "text-white/80 hover:bg-white/10"
+                              }`}
+                              onClick={() => setLayout("grid")}
+                            >
+                              <LayoutGrid className="w-4 h-4" />
+                              Grid
+                            </button>
+                            <button
+                              className={`px-2.5 py-1.5 flex items-center gap-1.5 text-sm ${
+                                layout === "list"
+                                  ? "bg-white/20 text-white"
+                                  : "text-white/80 hover:bg-white/10"
+                              }`}
+                              onClick={() => setLayout("list")}
+                            >
+                              <LayoutList className="w-4 h-4" />
+                              List
+                            </button>
+                          </div>
+
+                          {layout === "grid" && (
+                            <div className="flex bg-white/10 rounded-lg overflow-hidden">
+                              {[2, 3].map((col) => (
+                                <button
+                                  key={col}
+                                  className={`px-3 py-1.5 text-sm ${
+                                    columns === col
+                                      ? "bg-white/20 text-white"
+                                      : "text-white/80 hover:bg-white/10"
+                                  }`}
+                                  onClick={() => setColumns(col)}
+                                >
+                                  {col}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Right Section */}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => setIsShareModalOpen(true)}
+                          className="bg-white/10 text-white hover:bg-white/20 transition-colors h-9"
+                          size="sm"
+                        >
+                          <ShareIcon className="w-4 h-4" />
+                          <span className="ml-1.5 hidden sm:inline">Share</span>
+                        </Button>
+                        
+                        <Button
+                          onClick={() => setIsCreateModalOpen(true)}
+                          className="bg-white text-[#881ae5] hover:bg-white/90 transition-colors h-9"
+                          size="sm"
+                        >
+                          <PlusIcon className="w-4 h-4" />
+                          <span className="ml-1.5 hidden sm:inline">Add Content</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Content Section */}
-              <div className="max-w-7xl mx-auto p-4">
-                {filteredContent.length === 0 && !activeFilter ? (
-                  <WelcomeGuide />
-                ) : (
-                  <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-                    {isMobile || layout === "list" ? (
-                      <div className="flex flex-col gap-4">
-                        {filteredContent.map((item, index) => (
-                          <SocialCard
-                            key={index}
-                            type={item.type}
-                            link={item.link}
-                            title={item.title}
-                            tags={item.tags}
-                            className="w-full"
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <MasonryGrid 
-                        columns={isMobile ? 1 : columns} 
-                        gap={isMobile ? 4 : 6}
-                      >
-                        {filteredContent.map((item, index) => (
-                          <SocialCard
-                            key={index}
-                            type={item.type}
-                            link={item.link}
-                            title={item.title}
-                            tags={item.tags}
-                          />
-                        ))}
-                      </MasonryGrid>
-                    )}
-                  </div>
-                )}
+                {/* Content Section */}
+                <div className="max-w-7xl mx-auto p-4">
+                  {filteredContent.length === 0 && !activeFilter ? (
+                    <WelcomeGuide />
+                  ) : (
+                    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                      {isMobile || layout === "list" ? (
+                        <div className="flex flex-col gap-4">
+                          {filteredContent.map((item, index) => (
+                            <SocialCard
+                              key={index}
+                              type={item.type}
+                              link={item.link}
+                              title={item.title}
+                              tags={item.tags}
+                              className="w-full"
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <MasonryGrid 
+                          columns={isMobile ? 1 : columns} 
+                          gap={isMobile ? 4 : 6}
+                        >
+                          {filteredContent.map((item, index) => (
+                            <SocialCard
+                              key={index}
+                              type={item.type}
+                              link={item.link}
+                              title={item.title}
+                              tags={item.tags}
+                            />
+                          ))}
+                        </MasonryGrid>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </SidebarInset>
-      </div>
-      <CreateContentModel
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleAddContent}
-      />
-      <ShareContentModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-      />
-    </SidebarProvider>
+            )}
+          </SidebarInset>
+        </div>
+        <CreateContentModel
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleAddContent}
+        />
+        <ShareContentModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+        />
+      </SidebarProvider>
+      <ToastContainer />
+    </>
   );
 };
 
