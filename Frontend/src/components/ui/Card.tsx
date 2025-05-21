@@ -547,24 +547,24 @@ export function SocialCard({
       )}
       {...props}
     >
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center gap-2">
+      <CardHeader className="flex flex-row items-center justify-between gap-2 mb-3">
         <CardTitle className="flex items-center gap-2 flex-1 min-w-0">
           <PlatformIcon type={type} />
-          <span className="truncate">{title}</span>
+          <span className="truncate text-sm sm:text-base">{title}</span>
         </CardTitle>
         {!hideControls && (
-          <div className="flex gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <button
               title="Share"
-              className="p-2 hover:text-blue-500 transition-colors"
+              className="p-1.5 sm:p-2 hover:text-blue-500 transition-colors"
             >
-              <ShareIcon className="w-4 h-4" />
+              <ShareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
             <button
               title="Delete"
-              className="p-2 hover:text-red-500 transition-colors"
+              className="p-1.5 sm:p-2 hover:text-red-500 transition-colors"
             >
-              <TrashIcon className="w-4 h-4" />
+              <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         )}

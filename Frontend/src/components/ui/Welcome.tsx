@@ -84,7 +84,7 @@ export function WelcomeGuide() {
         <div className="mt-8">
           <button
             onClick={() => (document.querySelector('[aria-label="Add Content"]') as HTMLElement | null)?.click()}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+             className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
             Start Adding Content
           </button>

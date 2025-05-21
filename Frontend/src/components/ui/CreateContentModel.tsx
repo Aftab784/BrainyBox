@@ -66,16 +66,16 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
               id="type"
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full rounded-md border border-white/20 bg-white/10 px-3 py-2 text-white"
+              className="w-full rounded-md border border-white/20 bg-white text-[#881ae5] px-3 py-2 appearance-none cursor-pointer hover:bg-[#f4f4f5] transition-colors"
               required
             >
-              <option value="youtube">YouTube</option>
-              <option value="twitter">Twitter</option>
-              <option value="linkedin">LinkedIn</option>
-              <option value="instagram">Instagram</option>
-              <option value="notion">Notion</option>
-              <option value="excalidraw">Excalidraw</option>
-              <option value="eraser">Eraser</option>
+              <option value="youtube" className="bg-white/30">YouTube</option>
+              <option value="twitter" className="bg-white/30">Twitter</option>
+              <option value="linkedin" className="bg-white/30">LinkedIn</option>
+              <option value="instagram" className="bg-white/30">Instagram</option>
+              <option value="notion" className="bg-white/30">Notion</option>
+              <option value="excalidraw" className="bg-white/30">Excalidraw</option>
+              <option value="eraser" className="bg-white/30">Eraser</option>
             </select>
           </div>
           
@@ -107,13 +107,13 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
             <Button 
               variant="outline" 
               onClick={onClose}
-              className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-[#881ae5]"
+              className="w-full sm:w-auto border-white text-white hover:bg-white/20 transition-colors"
             >
               Cancel
             </Button>
             <Button 
               type="submit"
-              className="w-full sm:w-auto bg-white text-[#881ae5] hover:bg-white/90"
+              className="w-full sm:w-auto bg-white text-[#881ae5] hover:bg-[#f4f4f5] transition-colors"
             >
               Add Content
             </Button>
