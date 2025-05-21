@@ -39,13 +39,18 @@ export function AppSidebar({
   onContentLibraryClick 
 }: AppSidebarProps) {
   const { toggleSidebar, state } = useSidebar();
-  const isCollapsed = state === "collapsed";
   const isMobile = window.innerWidth < 768;
+  const isCollapsed = state === "collapsed";
 
-  // Create handlers that toggle sidebar after action
-  const handleClick = (callback: () => void) => {
-    callback();
-    // Only close sidebar on mobile
+  // Update the filter change handler to include sidebar toggle on mobile
+  const handleFilterClick = (filterId: string | null) => {
+    // If it's the same filter, just toggle it off
+    const newFilter = activeFilter === filterId ? null : filterId;
+    
+    // Call the filter change handler
+    onFilterChange(newFilter);
+    
+    // Close sidebar on mobile
     if (isMobile) {
       toggleSidebar();
     }
@@ -118,6 +123,14 @@ export function AppSidebar({
       )
     }
   ];
+
+  function handleClick(callback: () => void): void {
+    callback();
+    // Close sidebar on mobile after click
+    if (window.innerWidth < 768) {
+      toggleSidebar();
+    }
+  }
 
   return (
     <Sidebar variant="sidebar" bg-color="#881ae5">
@@ -198,7 +211,7 @@ export function AppSidebar({
                 <SidebarMenuItem key={platform.id}>
                   <SidebarMenuButton 
                     isActive={activeFilter === platform.id}
-                    onClick={() => onFilterChange(activeFilter === platform.id ? null : platform.id)}
+                    onClick={() => handleFilterClick(platform.id)}
                   >
                     {platform.icon}
                     <span>{platform.name}</span>
