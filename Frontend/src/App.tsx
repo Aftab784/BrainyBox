@@ -1,5 +1,5 @@
 import { Toaster } from 'sonner';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ContentPage from './pages/ContentPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -19,6 +19,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* Redirect root to login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
       <Toaster richColors />
     </BrowserRouter>
