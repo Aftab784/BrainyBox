@@ -26,5 +26,10 @@ export const authService = {
       password
     })
     return response.data
+  },
+
+  logout() {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
   }
 }

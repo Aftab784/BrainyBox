@@ -21,6 +21,8 @@ import TwitterIcon from '../../assets/icons/twitter.svg';
 import InstagramIcon from '../../assets/icons/instagram.svg';
 import { LogOut, User, Menu } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { useNavigate } from 'react-router-dom'
+import { authService } from '@/services/auth.service'
 
 
 interface AppSidebarProps {
@@ -39,6 +41,7 @@ export function AppSidebar({
   onContentLibraryClick 
 }: AppSidebarProps) {
   const { toggleSidebar, state } = useSidebar();
+  const navigate = useNavigate()
   const isMobile = window.innerWidth < 768;
   const isCollapsed = state === "collapsed";
 
@@ -132,11 +135,16 @@ export function AppSidebar({
     }
   }
 
+  const handleLogout = () => {
+    authService.logout()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <Sidebar variant="sidebar" bg-color="#881ae5">
       <SidebarHeader>
         <div className="flex flex-col items-center gap-2 px-2 py-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-md">
+          <div className="flex h-24 w-24 items-center justify-center rounded-md">
        <img src={logo} alt="Logo" className="w-full h-full object-contain" />
           </div>
           {!isCollapsed && (
@@ -232,23 +240,17 @@ export function AppSidebar({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">
-                User Name
+                MindMate
               </p>
-              <p className="text-xs text-white/70 truncate">
-                user@example.com
-              </p>
+              
             </div>
           </div>
 
           <button 
-            onClick={() => {
-              // Add your logout logic here
-              console.log('Logging out...');
-            }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/90 hover:bg-white/10 rounded-lg transition-colors"
+            onClick={handleLogout}
+            className="mt-auto p-4 w-full text-left hover:bg-white/5 text-white text-sm font-medium transition-colors"
           >
-            <LogOut className="w-4 h-4" />
-            <span>Log out</span>
+            Log out
           </button>
         </div>
       </div>
