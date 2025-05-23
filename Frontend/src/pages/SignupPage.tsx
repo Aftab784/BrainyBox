@@ -23,12 +23,12 @@ export default function SignupPage() {
           </div>
 
           {/* Title - Responsive text size */}
-          <h1 className="-mt-6 md:-mt-12 text-4xl md:text-6xl font-['kavoon'] bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] text-transparent bg-clip-text">
+          <h1 className="-mt-6 md:-mt-12 text-4xl md:text-6xl font-kavoon bg-gradient-to-r from-[#e57a7a] to-[#ef8247] text-transparent bg-clip-text">
             BrainyBox
           </h1>
 
           {/* Subtitle - Responsive text size */}
-          <p className="text-xl md:text-2xl lg:text-4xl font-['lancelot'] text-white font-light max-w-md">
+          <p className="text-xl md:text-2xl lg:text-4xl font-lancelot text-white font-light max-w-md">
             Cloud for Your Thoughts
           </p>
         </div>

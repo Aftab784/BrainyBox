@@ -1,21 +1,43 @@
-import { cn } from "@/lib/utils"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { authService } from "@/services/auth.service"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { cn } from "@/lib/utils"
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [name, setName] = useState("")
+  const navigate = useNavigate()
+  const [Name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Add your signup logic here
+    setLoading(true)
+
+    try {
+      const response = await authService.signup(
+        Name,
+        email,
+        password
+      )
+      toast.success(response.message || "Account created successfully!")
+      navigate("/login")
+    } catch (error: any) {
+      console.error("Signup error:", error.response?.data)
+      toast.error(
+        error.response?.data?.message ||
+          "Signup failed. Please try again."
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -28,9 +50,9 @@ export function SignupForm({
     >
       <CardContent className="p-0">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold text-white">Join the brain club</h1>
+          <h1 className="text-3xl font-bold text-white">Join BrainyBox</h1>
           <p className="text-base text-white/80">
-            Let's create your second brain together
+            Create your second brain account
           </p>
         </div>
 
@@ -38,11 +60,12 @@ export function SignupForm({
           <Input
             type="text"
             placeholder="Name"
-            value={name}
+            value={Name}
             onChange={(e) => setName(e.target.value)}
             className="bg-white/20 border border-white/30 text-white placeholder:text-white/60 rounded-lg"
             required
           />
+         
           <Input
             type="email"
             placeholder="Email"
@@ -62,17 +85,22 @@ export function SignupForm({
 
           <Button
             type="submit"
-            className="w-full rounded-lg bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] hover:opacity-90 text-white font-semibold py-2.5"
+            disabled={loading}
+            className="w-full rounded-lg bg-gradient-to-r from-[#e57a7a] to-[#ef8247] hover:opacity-90 text-white font-semibold py-2.5"
           >
-            Sign up
+            {loading ? "Creating Account..." : "Sign Up"}
           </Button>
 
-          <div className="text-center text-white/80 text-sm">
+          <p className="text-center text-white/80">
             Already have an account?{" "}
-            <Link to="/login" className="text-[#FF8E53] hover:underline">
+            <Button
+              variant="link"
+              className="text-white hover:text-[#ef8247]"
+              onClick={() => navigate("/login")}
+            >
               Login
-            </Link>
-          </div>
+            </Button>
+          </p>
         </form>
       </CardContent>
     </Card>
