@@ -1,9 +1,10 @@
+import { useState } from "react"
+import { Link } from "react-router-dom"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
-import { Link } from "react-router-dom"
 
 export function LoginForm({
   className,
@@ -12,9 +13,19 @@ export function LoginForm({
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Add your login logic here
+
+    try {
+      // Your login logic here
+      // After successful login:
+      toast.success("Successfully logged in!", {
+        position: "top-center",
+        duration: 2000,
+      })
+    } catch (error) {
+      toast.error("Login failed. Please try again.")
+    }
   }
 
   return (
@@ -62,7 +73,7 @@ export function LoginForm({
 
           <Button
             type="submit"
-            className="w-full rounded-lg bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] hover:opacity-90 text-white font-semibold py-2.5"
+            className="w-full rounded-lg bg-gradient-to-r from-[#e57a7a] to-[#ef8247] hover:opacity-90 text-white font-semibold py-2.5"
           >
             Submit
           </Button>
