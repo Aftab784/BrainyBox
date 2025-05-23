@@ -7,14 +7,24 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { usermiddleware } from "./middlewares";
 import { random } from "./utils";
+import cors from 'cors'
 
 const app = express()
+
+// Add CORS middleware before routes
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'token'],
+  credentials: true
+}))
+
 app.use(express.json());
 
 
 app.post("/api/v1/signup",async (req,res) => {
 
-  const { email, password, firstName, lastName } = req.body;
+  const { email, password, Name } = req.body;
 
   const requiredObj = z.object({
     email: z.string().email().min(3).max(100),
@@ -25,8 +35,8 @@ app.post("/api/v1/signup",async (req,res) => {
       .regex(/[a-z]/, 'Must contain at least one lowercase letter')
       .regex(/[0-9]/, 'Must contain at least one number')
       .regex(/[^A-Za-z0-9]/, 'Must contain at least one special character'),
-    firstName: z.string().min(3).max(10),
-    lastName: z.string().min(1)
+    Name: z.string().min(3).max(10),
+    
   });
 
   const parsedData = requiredObj.safeParse(req.body);
@@ -54,8 +64,8 @@ app.post("/api/v1/signup",async (req,res) => {
     await UserModel.create({
       email,
       password: hashedPassword,
-      firstName,
-      lastName
+      Name
+      
     });
 
     res.status(200).json({

@@ -1,30 +1,42 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+import { authService } from "@/services/auth.service"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
 
     try {
-      // Your login logic here
-      // After successful login:
-      toast.success("Successfully logged in!", {
-        position: "top-center",
-        duration: 2000,
-      })
-    } catch (error) {
-      toast.error("Login failed. Please try again.")
+      const response = await authService.login(email, password)
+
+      if (response.token) {
+        toast.success(response.message || "Login successful!")
+        navigate("/content")
+      }
+    } catch (error: any) {
+      console.error("Login error:", error.response?.data)
+
+      // Show specific error message from backend
+      toast.error(
+        error.response?.data?.message ||
+          "Login failed. Please check your credentials."
+      )
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -38,7 +50,7 @@ export function LoginForm({
     >
       <CardContent className="p-0">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold text-white">Sup brainiac</h1>
+          <h1 className="text-3xl font-bold text-white">Welcome back!</h1>
           <p className="text-base text-white/80">
             Ready to vibe with your second brain?
           </p>
@@ -62,28 +74,13 @@ export function LoginForm({
             required
           />
 
-          <div className="text-right">
-            <Link
-              to="/forgot-password"
-              className="text-sm text-white/80 hover:text-white"
-            >
-              Forgot Password?
-            </Link>
-          </div>
-
           <Button
             type="submit"
+            disabled={loading}
             className="w-full rounded-lg bg-gradient-to-r from-[#e57a7a] to-[#ef8247] hover:opacity-90 text-white font-semibold py-2.5"
           >
-            Submit
+            {loading ? "Logging in..." : "Login"}
           </Button>
-
-          <div className="text-center text-white/80 text-sm">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-[#FF8E53] hover:underline">
-              Sign up
-            </Link>
-          </div>
         </form>
       </CardContent>
     </Card>
