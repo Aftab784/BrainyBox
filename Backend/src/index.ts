@@ -154,25 +154,38 @@ app.get("/api/v1/content", usermiddleware,async (req:CustomRequest,res: express.
 })
 })
 
-app.delete("/api/v1/content", usermiddleware, async (req: CustomRequest,res) => {
-  const contentId = req.body.contentId;
+app.delete("/api/v1/content/:id", usermiddleware, async (req: CustomRequest, res: express.Response) => {
+  try {
+    const contentId = req.params.id;
+    const userId = req.userId;
 
- const result = await ContentModel.deleteMany({
-    contentId,
-    userId: req.userId
-  })
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(contentId)) {
+      res.status(400).json({ message: "Invalid content ID" });
+      return;
+    }
 
-  if(result.deletedCount === 0 ){
-    res.status(404).json({
-      message: "No content found to delete"
-    })
+    const result = await ContentModel.findByIdAndDelete({
+      _id: new mongoose.Types.ObjectId(contentId),
+      userId: userId
+    });
+
+    if (!result) {
+      res.status(404).json({ message: "Content not found or unauthorized" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Content deleted successfully",
+      success: true,
+      deletedId: contentId
+    });
+
+  } catch (error) {
+    console.error("Error deleting content:", error);
+    res.status(500).json({ message: "Failed to delete content" });
   }
-
-  res.json({
-    message: "Deleted"
-  })
-  
-})
+});
 
 app.post("/api/v1/brainybox/share",usermiddleware, async (req:CustomRequest,res: express.Response) => {
   try{

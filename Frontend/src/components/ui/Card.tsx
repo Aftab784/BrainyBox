@@ -1,6 +1,20 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { TrashIcon, ShareIcon } from "lucide-react";
+import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./alert-dialog";
+import { useState } from "react";
+import { toast } from "sonner";
+import api from "@/services/api";
 
 declare global {
   interface Window {
@@ -503,11 +517,15 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+// Update the SocialCardProps interface
 interface SocialCardProps extends React.ComponentProps<"div"> {
   type: EmbedProps["type"];
   link: string;
   title: string;
   hideControls?: boolean;
+  createdAt: string; // Add this
+  id: string; // Add this
+  onDelete?: (id: string) => void; // Add this
 }
 
 export function SocialCard({
@@ -517,8 +535,44 @@ export function SocialCard({
   hideControls = false,
   className,
   children,
+  createdAt,
+  id,
+  onDelete,
   ...props
 }: SocialCardProps) {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      console.log('Attempting to delete content:', id);
+
+      const response = await api.delete(`/api/v1/content/${id}`, {
+        headers: {
+          token: localStorage.getItem('token')
+        }
+      });
+
+      // Log full response for debugging
+      console.log('Delete response:', response);
+
+      const data = response.data as { success?: boolean; message?: string };
+      if (response.status === 200 && data.success) {
+        toast.success('Content deleted successfully');
+        onDelete?.(id);
+        setIsDeleteDialogOpen(false);
+      } else {
+        throw new Error(data?.message || 'Failed to delete content');
+      }
+    } catch (error: any) {
+      console.error('Failed to delete content:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete content');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   function getPlatformStyles(type: string): string {
   const styles = {
     youtube: "bg-red-600/10 border-red-600/20 hover:bg-red-600/20",
@@ -535,49 +589,78 @@ export function SocialCard({
   return styles[type as keyof typeof styles] || "bg-white border-gray-200 hover:bg-gray-50";
 }
   return (
-    <Card
-      className={cn(
-        "break-inside-avoid w-full",
-        "transition-all duration-200",
-        "mb-4 sm:mb-6",
-        getPlatformStyles(type),
-        className
-      )}
-      {...props}
-    >
-      <CardHeader className="flex flex-row items-center justify-between gap-2 mb-3">
-        <CardTitle className="flex items-center gap-2 flex-1 min-w-0">
-          <PlatformIcon type={type} />
-          <span className="truncate text-sm sm:text-base">{title}</span>
-        </CardTitle>
-        {!hideControls && (
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            <button
-              title="Share"
-              className="p-1.5 sm:p-2 hover:text-blue-500 transition-colors"
-            >
-              <ShareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
-            <button
-              title="Delete"
-              className="p-1.5 sm:p-2 hover:text-red-500 transition-colors"
-            >
-              <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
-          </div>
+    <>
+      <Card
+        className={cn(
+          "break-inside-avoid w-full",
+          "transition-all duration-200",
+          "mb-4 sm:mb-6",
+          getPlatformStyles(type),
+          className
         )}
-      </CardHeader>
-      
-      <CardContent>
-        <div className="aspect-video sm:aspect-auto">
-          <Embed 
-            type={type} 
-            link={link} 
-            title={title}
-          />
-        </div>
-      </CardContent>
-    </Card>
+        {...props}
+      >
+        <CardHeader className="flex flex-row items-center justify-between gap-2 mb-3">
+          <CardTitle className="flex items-center gap-2 flex-1 min-w-0">
+            <PlatformIcon type={type} />
+            <span className="truncate text-sm sm:text-base">{title}</span>
+          </CardTitle>
+          {!hideControls && (
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <button
+                title="Share"
+                className="p-1.5 sm:p-2 hover:text-blue-500 transition-colors"
+              >
+                <ShareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </button>
+              <button
+                title="Delete"
+                className="p-1.5 sm:p-2 hover:text-red-500 transition-colors"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                disabled={isDeleting}
+              >
+                <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </button>
+            </div>
+          )}
+        </CardHeader>
+        
+        <CardContent>
+          <div className="aspect-video sm:aspect-auto">
+            <Embed 
+              type={type} 
+              link={link} 
+              title={title}
+            />
+          </div>
+        </CardContent>
+
+        <CardFooter className="text-sm text-gray-500">
+          Added on {format(new Date(createdAt), "MMMM d, yyyy")}
+        </CardFooter>
+      </Card>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this content. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 

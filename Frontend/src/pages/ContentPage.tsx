@@ -37,6 +37,7 @@ interface ContentItem {
   link: string;
   title: string;
   userId: string;
+  createdAt?: string; // Added createdAt as optional
 }
 
 const ContentPage: React.FC = () => {
@@ -49,6 +50,7 @@ const ContentPage: React.FC = () => {
   const [isDashboardView, setIsDashboardView] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Mobile detection
   useEffect(() => {
@@ -74,6 +76,8 @@ const ContentPage: React.FC = () => {
       } catch (error) {
         console.error('Failed to fetch content:', error);
         toast.error('Failed to load your content');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -110,6 +114,17 @@ const ContentPage: React.FC = () => {
       },
       ...prevContent
     ]);
+  };
+
+  const handleDelete = async (deletedId: string) => {
+    // Log the deletion
+    console.log('Handling deletion of content:', deletedId);
+    
+    setContent((prevContent) => {
+      const newContent = prevContent.filter((item) => item._id !== deletedId);
+      console.log('Content after deletion:', newContent);
+      return newContent;
+    });
   };
 
   // Filter content
@@ -226,9 +241,12 @@ const ContentPage: React.FC = () => {
                         {filteredContent.map((item, index) => (
                           <SocialCard
                             key={item._id}
+                            id={item._id}
                             type={item.type}
                             link={item.link}
                             title={item.title}
+                            createdAt={item.createdAt || new Date().toISOString()}
+                            onDelete={handleDelete}
                             className="w-full"
                           />
                         ))}
@@ -240,10 +258,14 @@ const ContentPage: React.FC = () => {
                       >
                         {filteredContent.map((item, index) => (
                           <SocialCard
-                            key={index}
+                            key={item._id}
+                            id={item._id}
                             type={item.type}
                             link={item.link}
                             title={item.title}
+                            createdAt={item.createdAt || new Date().toISOString()}
+                            onDelete={handleDelete}
+                            className="w-full"
                           />
                         ))}
                       </MasonryGrid>
