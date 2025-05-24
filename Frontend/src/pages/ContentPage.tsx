@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import { User, LogOut, BookOpen, LayoutGrid, LayoutList } from "lucide-react";
 import { ShareIcon } from "@/icons/ShareIcon";
 import { PlusIcon } from "@/icons/PlusIcon";
@@ -19,6 +19,7 @@ import { WelcomeGuide } from "@/components/ui/Welcome";
 import { Button } from "@/components/ui/Button";
 import { AtomIcon as PlatformIcon } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
+import { contentService } from '@/services/content.service';
 
 // Define types and interfaces
 type SocialCardType =
@@ -31,73 +32,16 @@ type SocialCardType =
   | "excalidraw";
 
 interface ContentItem {
+  _id: string;
   type: SocialCardType;
   link: string;
   title: string;
-  tags?: string[];
+  userId: string;
 }
 
 const ContentPage: React.FC = () => {
   // State management
-  const [content, setContent] = useState<ContentItem[]>([
-    // Your sample content array here
-    {
-      type: "youtube",
-      link: "https://www.youtube.com/watch?v=Oo3qsxihXqY",
-      title: "YouTube Video",
-      tags: ["youtube", "video", "tutorial"],
-    },
-     {
-      type: "linkedin",
-      link: "https://www.youtube.com/watch?v=Oo3qsxihXqY",
-      title: "YouTube Video",
-      tags: ["youtube", "video", "tutorial"],
-    },
-    {
-      type: "twitter",
-      link: "https://x.com/amritwt/status/1924821724497109484",
-      title: "Twitter Post",
-      tags: ["twitter", "tweet", "harkirat"],
-    },
-    {
-      type: "instagram",
-      link: "https://www.instagram.com/p/DJb2iAStc0u/?utm_source=ig_web_copy_link",
-      title: "CS50",
-      tags: ["davidjmalan", "insta", "cs50"],
-    },
-    {
-      type: "notion",
-      link: "https://www.youtube.com/watch?v=Oo3qsxihXqY",
-      title: "YouTube Video",
-      tags: ["youtube", "video", "tutorial"],
-    },
-    {
-      type: "excalidraw",
-      link: "https://www.youtube.com/watch?v=Oo3qsxihXqY",
-      title: "YouTube Video",
-      tags: ["youtube", "video", "tutorial"],
-    },
-    {
-      type: "eraser",
-      link: "https://www.youtube.com/watch?v=Oo3qsxihXqY",
-      title: "YouTube Video",
-      tags: ["youtube", "video", "tutorial"],
-    },
-    {
-      type: "eraser",
-      link: "https://www.youtube.com/watch?v=Oo3qsxihXqY",
-      title: "YouTube Video",
-      tags: ["youtube", "video", "tutorial"],
-    },
-    {
-      type: "eraser",
-      link: "https://www.youtube.com/watch?v=Oo3qsxihXqY",
-      title: "YouTube Video",
-      tags: ["youtube", "video", "tutorial"],
-    },
-    // ... rest of your content items
-  ]);
-  
+  const [content, setContent] = useState<ContentItem[]>([]);
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [columns, setColumns] = useState(3);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -114,6 +58,26 @@ const ContentPage: React.FC = () => {
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Fetch content when component mounts
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const response = await contentService.getMyContent();
+        // Assert the type of response to access content safely
+        if (response && typeof response === "object" && "content" in response) {
+          setContent((response as { content: ContentItem[] }).content);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error) {
+        console.error('Failed to fetch content:', error);
+        toast.error('Failed to load your content');
+      }
+    };
+
+    fetchContent();
   }, []);
 
   // Handlers
@@ -136,14 +100,15 @@ const ContentPage: React.FC = () => {
     title: string;
     type: string;
     link: string;
-    tags: string[];
   }) => {
     setContent((prevContent) => [
-      ...prevContent,
       {
+        _id: Date.now().toString(), // Temporary ID until refresh
         ...newContent,
         type: newContent.type as SocialCardType,
+        userId: 'current-user'
       },
+      ...prevContent
     ]);
   };
 
@@ -260,11 +225,10 @@ const ContentPage: React.FC = () => {
                       <div className="flex flex-col gap-4">
                         {filteredContent.map((item, index) => (
                           <SocialCard
-                            key={index}
+                            key={item._id}
                             type={item.type}
                             link={item.link}
                             title={item.title}
-                            tags={item.tags}
                             className="w-full"
                           />
                         ))}
@@ -280,7 +244,6 @@ const ContentPage: React.FC = () => {
                             type={item.type}
                             link={item.link}
                             title={item.title}
-                            tags={item.tags}
                           />
                         ))}
                       </MasonryGrid>

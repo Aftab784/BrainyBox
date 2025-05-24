@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom" // Add Link import
 import { toast } from "sonner"
 import { authService } from "@/services/auth.service"
 import { Button } from "@/components/ui/Button"
@@ -81,6 +81,19 @@ export function LoginForm({
           >
             {loading ? "Logging in..." : "Login"}
           </Button>
+
+          {/* Add this signup link section */}
+          <div className="text-center mt-2">
+            <p className="text-white/80">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="text-[#ef8247] hover:text-[#e57a7a] transition-colors font-semibold"
+              >
+                Sign up
+              </Link>
+            </p>
+          </div>
         </form>
       </CardContent>
     </Card>

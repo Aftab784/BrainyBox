@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from './Button';
 import { Input } from './input';
 import { Label } from './label';
+import { toast } from 'sonner';
+import api from '@/services/api';
 
 interface CreateContentModelProps {
   isOpen: boolean;
@@ -11,7 +13,6 @@ interface CreateContentModelProps {
     title: string;
     type: string;
     link: string;
-    tags: string[];
   }) => void;
 }
 
@@ -19,23 +20,37 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
   const [title, setTitle] = React.useState('');
   const [type, setType] = React.useState('youtube');
   const [link, setLink] = React.useState('');
-  const [tags, setTags] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      title,
-      type,
-      link,
-      tags: tags.split(',').map(tag => tag.trim())
-    });
-    
-    // Reset form
-    setTitle('');
-    setType('youtube');
-    setLink('');
-    setTags('');
-    onClose();
+    setLoading(true);
+
+    try {
+      const response = await api.post('/api/v1/content', {
+        title,
+        type,
+        link
+      }, {
+        headers: {
+          token: localStorage.getItem('token')
+        }
+      });
+
+      toast.success('Content added successfully!');
+      onSubmit({ title, type, link });
+      
+      // Reset form
+      setTitle('');
+      setType('youtube');
+      setLink('');
+      onClose();
+    } catch (error: any) {
+      console.error('Failed to add content:', error);
+      toast.error(error.response?.data?.message || 'Failed to add content');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,13 +84,13 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
               className="w-full rounded-md border border-white/20 bg-white text-[#881ae5] px-3 py-2 appearance-none cursor-pointer hover:bg-[#f4f4f5] transition-colors"
               required
             >
-              <option value="youtube" className="bg-white/30">YouTube</option>
-              <option value="twitter" className="bg-white/30">Twitter</option>
-              <option value="linkedin" className="bg-white/30">LinkedIn</option>
-              <option value="instagram" className="bg-white/30">Instagram</option>
-              <option value="notion" className="bg-white/30">Notion</option>
-              <option value="excalidraw" className="bg-white/30">Excalidraw</option>
-              <option value="eraser" className="bg-white/30">Eraser</option>
+              <option value="youtube">YouTube</option>
+              <option value="twitter">Twitter</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="instagram">Instagram</option>
+              <option value="notion">Notion</option>
+              <option value="excalidraw">Excalidraw</option>
+              <option value="eraser">Eraser</option>
             </select>
           </div>
           
@@ -91,31 +106,21 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="tags" className="text-white">Tags</Label>
-            <Input
-              id="tags"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="Enter tags (comma-separated)"
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-            />
-            <p className="text-sm text-white/70">Separate tags with commas</p>
-          </div>
-          
           <DialogFooter className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-white/20">
             <Button 
               variant="outline" 
               onClick={onClose}
+              disabled={loading}
               className="w-full sm:w-auto border-white text-white hover:bg-white/20 transition-colors"
             >
               Cancel
             </Button>
             <Button 
               type="submit"
+              disabled={loading}
               className="w-full sm:w-auto bg-white text-[#881ae5] hover:bg-[#f4f4f5] transition-colors"
             >
-              Add Content
+              {loading ? 'Adding...' : 'Add Content'}
             </Button>
           </DialogFooter>
         </form>
