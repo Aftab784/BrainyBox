@@ -6,14 +6,19 @@ import { Label } from './label';
 import { toast } from 'sonner';
 import api from '@/services/api';
 
+interface ContentItem {
+  _id: string; // Changed from id to _id to match MongoDB
+  title: string;
+  type: string;
+  link: string;
+  userId: string;
+  createdAt: string;
+}
+
 interface CreateContentModelProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (content: {
-    title: string;
-    type: string;
-    link: string;
-  }) => void;
+  onSubmit: (content: ContentItem) => void;
 }
 
 export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentModelProps) {
@@ -37,14 +42,16 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
         }
       });
 
-      toast.success('Content added successfully!');
-      onSubmit({ title, type, link });
-      
-      // Reset form
-      setTitle('');
-      setType('youtube');
-      setLink('');
-      onClose();
+      if (response.data) {
+        toast.success('Content added successfully');
+        onSubmit(response.data as ContentItem); // The backend should return the complete content item
+        
+        // Reset form
+        setTitle('');
+        setType('youtube');
+        setLink('');
+        onClose();
+      }
     } catch (error: any) {
       console.error('Failed to add content:', error);
       toast.error(error.response?.data?.message || 'Failed to add content');
@@ -52,6 +59,15 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
       setLoading(false);
     }
   };
+
+  // Reset form when modal is closed
+  React.useEffect(() => {
+    if (!isOpen) {
+      setTitle('');
+      setType('youtube');
+      setLink('');
+    }
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -108,6 +124,7 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
           
           <DialogFooter className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-white/20">
             <Button 
+              type="button"
               variant="outline" 
               onClick={onClose}
               disabled={loading}

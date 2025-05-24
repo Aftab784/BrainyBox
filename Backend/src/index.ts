@@ -8,19 +8,21 @@ import bcrypt from 'bcryptjs';
 import { usermiddleware } from "./middlewares";
 import { random } from "./utils";
 import cors from 'cors'
+import crypto from 'crypto'
 
 const app = express()
 
 // Add CORS middleware before routes
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'token'],
   credentials: true
 }))
 
 app.use(express.json());
 
+mongoose.set('debug', true); // This will log all MongoDB operations
 
 app.post("/api/v1/signup",async (req,res) => {
 
@@ -46,7 +48,7 @@ app.post("/api/v1/signup",async (req,res) => {
       message: 'Error in inputs',
       error: parsedData.error.errors
     });
-   
+    return;
   }
 
   try {
@@ -56,7 +58,7 @@ app.post("/api/v1/signup",async (req,res) => {
        res.status(403).json({
         message: 'User already exists with this username'
       });
-      
+      return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -79,7 +81,7 @@ app.post("/api/v1/signup",async (req,res) => {
     });
    
   }
-})
+});
 
 app.post("/api/v1/signin", async (req, res) => {
   const { email, password } = req.body;
@@ -98,6 +100,7 @@ app.post("/api/v1/signin", async (req, res) => {
 
     if (!matchedPassword) {
       res.status(401).json({ message: "Invalid credentials" });
+      return;
     }
 
     const token = jwt.sign({
@@ -127,32 +130,39 @@ interface CustomRequest extends express.Request {
 }
 
 app.post("/api/v1/content", usermiddleware, async (req: CustomRequest, res: express.Response) => {
-  const { link, type, title } = req.body as ContentRequestBody;
+  try {
+    const { title, type, link } = req.body;
+    const userId = req.userId;
 
-  await ContentModel.create({
-    link,
-    type,
-    title,
-    userId: req.userId,
-    tags: []
-  });
+    const newContent = await ContentModel.create({
+      title,
+      type,
+      link,
+      userId
+    });
 
-  res.json({
-    message: "Content Added"
-  });
-
+    res.status(201).json(newContent);
+  } catch (error) {
+    console.error("Error creating content:", error);
+    res.status(500).json({ message: "Failed to create content" });
+  }
 });
 
-app.get("/api/v1/content", usermiddleware,async (req:CustomRequest,res: express.Response) => {
-  const userId = req.userId;
-  const content = await ContentModel.find({
-    userId: userId
-  }).populate("userId", "username")
+app.get("/api/v1/content", usermiddleware, async (req: CustomRequest, res: express.Response) => {
+  try {
+    const userId = req.userId;
+    const content = await ContentModel.find({
+      userId: userId
+    }).populate("userId", "username");
 
-  res.json({
-    content
-})
-})
+    res.json({
+      content
+    });
+  } catch (error) {
+    console.error("Error fetching content:", error);
+    res.status(500).json({ message: "Failed to fetch content" });
+  }
+});
 
 app.delete("/api/v1/content/:id", usermiddleware, async (req: CustomRequest, res: express.Response) => {
   try {
@@ -187,90 +197,190 @@ app.delete("/api/v1/content/:id", usermiddleware, async (req: CustomRequest, res
   }
 });
 
-app.post("/api/v1/brainybox/share",usermiddleware, async (req:CustomRequest,res: express.Response) => {
-  try{
-  const { share } = req.body;
-  
+// Update share status
+app.post("/api/v1/brainybox/share", usermiddleware, async (req: CustomRequest, res: express.Response): Promise<void> => {
+  try {
+    const { share } = req.body;
+    const userId = req.userId;
+
+    if (!userId) {
+      res.status(401).json({ message: "User not authenticated" });
+      return;
+    }
+
     if (share) {
-      const existingLink = await LinksModel.findOne({
-        userId: req.userId
-      });
+      try {
+        // First, deactivate existing links without session
+        await LinksModel.updateMany(
+          { userId: new mongoose.Types.ObjectId(userId) },
+          { $set: { active: false } }
+        );
 
-      if (existingLink) {
-        res.json({
-          hash: existingLink.hash
+        // Generate unique hash
+        const hash = crypto.randomBytes(12).toString('hex');
+
+        // Create new link document without using create array syntax
+        const newLink = await LinksModel.create({
+          hash,
+          userId: new mongoose.Types.ObjectId(userId),
+          active: true
         });
-        return;
+
+        console.log('Share link created:', newLink.hash); // Debug log
+
+        res.status(200).json({ 
+          hash: newLink.hash,
+          message: "Share link generated successfully" 
+        });
+      } catch (dbError) {
+        console.error("Database error:", dbError);
+        res.status(500).json({ 
+          message: "Database error while creating share link" 
+        });
       }
-
-      const hash = random(18);
-      await LinksModel.create({
-        userId: req.userId,
-        hash: hash
-      });
-
-      res.json({
-        hash
-      });
     } else {
-      const result = await LinksModel.deleteOne({
-        userId: req.userId
-      });
+      // Deactivate all links
+      await LinksModel.updateMany(
+        { userId: new mongoose.Types.ObjectId(userId) },
+        { $set: { active: false } }
+      );
 
-      if (result.deletedCount === 0) {
-        res.status(404).json({
-          message: "No link found to remove"
-        });
-        return;
-      }
-
-      res.json({
-        message: "Removed link"
+      res.status(200).json({ 
+        message: "Sharing disabled successfully" 
       });
     }
-  }catch(err){
-    console.log(err)
-    res.status(500).json({
-      message: "Server error"
+  } catch (error) {
+    console.error("Error in share endpoint:", error);
+    res.status(500).json({ 
+      message: "Server error while managing share status" 
     });
   }
 });
 
-app.get("/api/v1/brainybox/~:shareLink",async (req:CustomRequest,res: express.Response) => {
-  const hash = req.params.shareLink;
+// Get shared content
+app.get("/api/v1/brainybox/share/:hash", async (req: express.Request, res: express.Response) => {
+  try {
+    const { hash } = req.params;
+    console.log('Fetching content for hash:', hash); // Debug log
+    
+    // Find the active share link
+    const shareLink = await LinksModel.findOne({ 
+      hash,
+      active: true 
+    });
 
- const link =  await LinksModel.findOne({
-    hash
-  });
+    if (!shareLink) {
+      res.status(404).json({ 
+        message: "Content not found or no longer shared" 
+      });
+      return;
+    }
 
-  if(!link){
-    res.status(411).json({
-      message: "Sorry Incorrect Input"
-    })
-    return;
+    // Find the user's content
+    const content = await ContentModel.find({ 
+      userId: shareLink.userId 
+    }).sort({ createdAt: -1 });
+
+    console.log('Found content items:', content.length); // Debug log
+
+    // Get user info
+    const user = await UserModel.findById(shareLink.userId);
+
+    res.status(200).json({
+      username: user?.Name || "Anonymous",
+      content: content
+    });
+
+  } catch (error) {
+    console.error("Error fetching shared content:", error);
+    res.status(500).json({ 
+      message: "Failed to fetch shared content" 
+    });
   }
-  
-  const content = await ContentModel.findOne({
-    userId: link.userId
-  }) 
+});
 
-  const user = await UserModel.findOne({
-    _id: link.userId
-  })
+app.get("/api/v1/brainybox/~:hash", async (req, res) => {
+  try {
+    const { hash } = req.params;
+    console.log('Fetching content for hash:', hash); // Debug log
 
-  if(!user){
-    res.status(411).json({
-      message: "User not found, error should ideally not happen"
-    })
-    return;
+    // Find the active share link
+    const shareLink = await LinksModel.findOne({ 
+      hash: hash.replace('~', ''),
+      active: true 
+    });
+
+    if (!shareLink) {
+      console.log('No active share link found for hash:', hash);
+      return res.status(404).json({ 
+        message: "Content not found or no longer shared" 
+      });
+    }
+
+    // Find the user's content
+    const content = await ContentModel.find({ 
+      userId: shareLink.userId 
+    }).sort({ createdAt: -1 });
+
+    console.log(`Found ${content.length} content items`); // Debug log
+
+    // Get user info
+    const user = await UserModel.findById(shareLink.userId);
+
+    return res.status(200).json({
+      username: user?.Name || "Anonymous",
+      content: content
+    });
+
+  } catch (error) {
+    console.error("Error fetching shared content:", error);
+    return res.status(500).json({ 
+      message: "Failed to fetch shared content" 
+    });
   }
+});
 
-  res.json({
-    username: user.username,
-    content: content
-  })
+// Add this route to handle shared content
+app.get("/api/v1/brainybox/:hash", async (req: express.Request, res: express.Response) => {
+  try {
+    let { hash } = req.params;
+    // If you expect the hash to be prefixed with ~, remove it
+    if (hash.startsWith('~')) {
+      hash = hash.slice(1);
+    }
+    console.log('Received hash:', hash); // Debug log
 
-})
+    // Find the link document
+    const linkDoc = await LinksModel.findOne({ 
+      hash: hash,
+      active: true 
+    });
+    console.log('Found link doc:', linkDoc); // Debug log
+
+    if (!linkDoc) {
+      res.status(404).json({ message: "Shared content not found" });
+      return;
+    }
+
+    // Find all content for this user
+    const content = await ContentModel.find({ 
+      userId: linkDoc.userId 
+    }).sort({ createdAt: -1 });
+    console.log('Found content count:', content.length); // Debug log
+
+    // Find user info
+    const user = await UserModel.findById(linkDoc.userId);
+
+    res.status(200).json({
+      username: user?.Name || 'Anonymous',
+      content: content
+    });
+
+  } catch (error) {
+    console.error("Error fetching shared content:", error);
+    res.status(500).json({ message: "Failed to fetch shared content" });
+  }
+});
 
 interface MainApp {
     (app: express.Express): Promise<void>;
@@ -278,23 +388,28 @@ interface MainApp {
 
 const main: MainApp = async (app) => {
   try {
+    await mongoose.connect(process.env.MONGO_URL as string, {
+      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: 10,
+      writeConcern: {
+        w: 'majority'
+      },
+      retryWrites: true
+    });
+    
+    // Clear and rebuild indexes on startup
+    await LinksModel.collection.dropIndexes();
+    await LinksModel.syncIndexes();
+    
+    console.log('✅ MongoDB connected successfully');
+    console.log('✅ MongoDB indexes synchronized');
 
-    const start = Date.now(); 
-
-    await mongoose.connect(process.env.MONGO_URL as string);
-
-    const end = Date.now();
-
-    const timeTaken = ((end - start ) / 1000).toFixed(3)
-
-    console.log(`✅ MongoDB connected in ${timeTaken}s`);
-
-    app.listen(2000, ()=> {
+    app.listen(2000, () => {
       console.log("🚀 Server is running on port 2000");
-    })
-  }catch(err) {
-    console.error("❌ Failed to connect to MongoDB:", err);
-        process.exit(1); // Exit the app if DB connection fails
+    });
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
   }
 };
 

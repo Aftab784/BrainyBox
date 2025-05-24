@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Check, Sparkles, BookOpen, Tag, Search } from 'lucide-react';
+import { CreateContentModel } from './CreateContentModel';
+import { toast } from 'sonner';
 
 interface Step {
   title: string;
@@ -7,7 +9,23 @@ interface Step {
   icon: React.ReactNode;
 }
 
+interface ContentItem {
+  _id: string;
+  title: string;
+  type: string;
+  link: string;
+  userId: string;
+  createdAt: string;
+}
+
 export function WelcomeGuide() {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const handleAddContent = (newContent: ContentItem) => {
+    toast.success('Content added successfully');
+    // You might want to redirect to content page or update UI
+  };
+
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center">
       <div className="max-w-2xl">
@@ -83,13 +101,19 @@ export function WelcomeGuide() {
 
         <div className="mt-8">
           <button
-            onClick={() => (document.querySelector('[aria-label="Add Content"]') as HTMLElement | null)?.click()}
-             className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
             Start Adding Content
           </button>
         </div>
       </div>
+
+      <CreateContentModel
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleAddContent}
+      />
     </div>
   );
 }

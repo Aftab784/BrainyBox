@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { TrashIcon, ShareIcon } from "lucide-react";
+import { TrashIcon, ShareIcon, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import {
   AlertDialog,
@@ -13,8 +13,9 @@ import {
   AlertDialogTitle,
 } from "./alert-dialog";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from 'sonner';
 import api from "@/services/api";
+import { ShareDialog } from './ShareDialog';
 
 declare global {
   interface Window {
@@ -542,6 +543,18 @@ export function SocialCard({
 }: SocialCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+
+  // Add handleShare function
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success('Link copied to clipboard!');
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      toast.error('Failed to copy link');
+    }
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -610,6 +623,7 @@ export function SocialCard({
               <button
                 title="Share"
                 className="p-1.5 sm:p-2 hover:text-blue-500 transition-colors"
+                onClick={handleShare}
               >
                 <ShareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
@@ -660,6 +674,11 @@ export function SocialCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ShareDialog 
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+      />
     </>
   );
 }

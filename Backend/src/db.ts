@@ -16,10 +16,34 @@ const ContentSchema = new Schema({
 })
 
 
-const LinkSchema = new Schema({
-    hash: String,
-    userId: {type: mongoose.Types.ObjectId, ref: 'User', required: true, unique: true },
-})
+const LinkSchema = new mongoose.Schema({
+  hash: { 
+    type: String, 
+    required: true, 
+    unique: true,
+    trim: true
+  },
+  userId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true 
+  },
+  active: { 
+    type: Boolean, 
+    default: true 
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  }
+});
+
+// Remove all existing indexes first
+LinkSchema.clearIndexes();
+
+// Create new indexes
+LinkSchema.index({ hash: 1 }, { unique: true });
+LinkSchema.index({ userId: 1, active: 1 });
 
 function model(name: string, schema: mongoose.Schema) {
     return mongoose.model(name, schema);
@@ -27,4 +51,4 @@ function model(name: string, schema: mongoose.Schema) {
 
 export const UserModel = model("User", userSchema);
 export const ContentModel = model("Content", ContentSchema);
-export const LinksModel = model("Links", LinkSchema);
+export const LinksModel = mongoose.model('Links', LinkSchema);

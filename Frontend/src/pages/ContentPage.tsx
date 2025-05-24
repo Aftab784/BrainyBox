@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/Button";
 import { AtomIcon as PlatformIcon } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { contentService } from '@/services/content.service';
+import { ShareDialog } from '@/components/ui/ShareDialog';
 
 // Define types and interfaces
 type SocialCardType =
@@ -125,6 +126,11 @@ const ContentPage: React.FC = () => {
       console.log('Content after deletion:', newContent);
       return newContent;
     });
+  };
+
+  // Function to handle the "Start Adding Content" button click
+  const handleStartAddingContent = () => {
+    setIsCreateModalOpen(true);
   };
 
   // Filter content
@@ -284,6 +290,10 @@ const ContentPage: React.FC = () => {
         onSubmit={handleAddContent}
       />
       <ShareContentModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
+      <ShareDialog 
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />

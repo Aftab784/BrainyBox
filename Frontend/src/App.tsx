@@ -4,6 +4,7 @@ import ContentPage from './pages/ContentPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { SharedContentPage } from '@/pages/SharedContent';
 
 function App() {
   return (
@@ -19,8 +20,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* Redirect root to login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/shared/:hash" element={<SharedContentPage />} />
       </Routes>
       <Toaster richColors />
     </BrowserRouter>

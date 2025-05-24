@@ -54,4 +54,28 @@ export const contentService = {
   }
 };
 
+export const shareService = {
+  generateShareLink: async () => {
+    const response = await api.post('/api/v1/brainybox/share', {
+      share: true
+    }, {
+      headers: {
+        token: localStorage.getItem('token')
+      }
+    });
+    return response.data;
+  },
+
+  stopSharing: async () => {
+    const response = await api.post('/api/v1/brainybox/share', {
+      share: false
+    }, {
+      headers: {
+        token: localStorage.getItem('token')
+      }
+    });
+    return response.data;
+  }
+};
+
 export default contentService;
