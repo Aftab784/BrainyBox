@@ -13,9 +13,7 @@ const app = express()
 
 // Add CORS middleware before routes
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'token'],
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }))
 
@@ -236,41 +234,49 @@ app.post("/api/v1/brainybox/share",usermiddleware, async (req:CustomRequest,res:
   }
 });
 
-app.get("/api/v1/brainybox/~:shareLink",async (req:CustomRequest,res: express.Response) => {
-  const hash = req.params.shareLink;
+// Update the shared content endpoint
+app.get("/api/v1/brainybox/~:shareLink", async (req: express.Request, res: express.Response) => {
+  try {
+    const hash = req.params.shareLink;
+    
+    // Find the share link in database
+    const shareLink = await LinksModel.findOne({ hash });
+    
+    if (!shareLink) {
+      res.status(404).json({
+        message: "Share link not found"
+      });
+      return;
+    }
 
- const link =  await LinksModel.findOne({
-    hash
-  });
+    // Get user's content
+    const content = await ContentModel.find({ 
+      userId: shareLink.userId 
+    }).sort({ createdAt: -1 });
 
-  if(!link){
-    res.status(411).json({
-      message: "Sorry Incorrect Input"
-    })
-    return;
+    // Get user info
+    const user = await UserModel.findById(shareLink.userId);
+
+    if (!user) {
+      res.status(404).json({
+        message: "User not found"
+      });
+      return;
+    }
+
+    res.json({
+      username: user.Name || user.email,
+      content
+    });
+
+  } catch (error: any) {
+    console.error('Share content error:', error);
+    res.status(500).json({
+      message: "Server error",
+      error: error?.message || 'Unknown error'
+    });
   }
-  
-  const content = await ContentModel.findOne({
-    userId: link.userId
-  }) 
-
-  const user = await UserModel.findOne({
-    _id: link.userId
-  })
-
-  if(!user){
-    res.status(411).json({
-      message: "User not found, error should ideally not happen"
-    })
-    return;
-  }
-
-  res.json({
-    username: user.username,
-    content: content
-  })
-
-})
+});
 
 interface MainApp {
     (app: express.Express): Promise<void>;

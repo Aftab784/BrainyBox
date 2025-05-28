@@ -27,7 +27,7 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
     setLoading(true);
 
     try {
-      const response = await api.post('/api/v1/content', {
+      await api.post('/api/v1/content', {
         title,
         type,
         link

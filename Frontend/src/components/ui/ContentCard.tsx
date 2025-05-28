@@ -11,7 +11,7 @@ interface ContentCardProps {
   onShare: () => void
 }
 
-export function ContentCard({ title, link, type, createdAt, onShare }: ContentCardProps) {
+export function ContentCard({ title,  createdAt, onShare }: ContentCardProps) {
   return (
     <Card className="w-full bg-white/5 border-white/10">
       <CardContent className="p-4">

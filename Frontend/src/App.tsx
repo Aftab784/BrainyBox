@@ -4,6 +4,7 @@ import ContentPage from './pages/ContentPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { SharedContentPage } from './pages/ShareContentPage';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="shared/:hash" element={<SharedContentPage />} />
         {/* Redirect root to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>

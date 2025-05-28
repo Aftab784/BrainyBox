@@ -1,108 +1,111 @@
 import * as React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './Dialog';
+import { Dialog, DialogContent } from './Dialog';
 import { Button } from './Button';
-import { Input } from './input';
-import { Label } from './label';
-import { Share2, Copy, Link, Check } from 'lucide-react';
+import { X, Copy } from 'lucide-react';
+import { contentService } from '@/services/content.service';
+import { toast } from 'sonner';
+
+interface ShareResponse {
+  hash: string;
+}
 
 interface ShareContentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  contentId?: string;
 }
 
-export function ShareContentModal({ isOpen, onClose }: ShareContentModalProps) {
-  const [copied, setCopied] = React.useState(false);
+export function  ShareContentModal({ isOpen, onClose, contentId }: ShareContentModalProps) {
+  const [shareLink, setShareLink] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
 
-  const shareLink = "https://brainbox.app/share/collection/xyz123";
+  // Generate share link when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      generateShareLink();
+    }
+  }, [isOpen]);
 
-  const handleCopyLink = async () => {
+  const generateShareLink = async () => {
+    try {
+      setLoading(true);
+      const response = await contentService.shareContent(true) as ShareResponse;
+      if (response && response.hash) {
+        const url = `${window.location.origin}/shared/${response.hash}`;
+        setShareLink(url);
+      }
+    } catch (error) {
+      toast.error("Failed to generate share link");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(shareLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+      toast.success("Link copied!");
+    } catch (error) {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  const handleStopSharing = async () => {
+    try {
+      await contentService.shareContent(false);
+      setShareLink("");
+      onClose();
+      toast.success("Sharing stopped");
+    } catch (error) {
+      toast.error("Failed to stop sharing");
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-[425px] p-4 sm:p-6 bg-[#881ae5] text-white">
-        <DialogHeader className="border-b border-white/20 pb-4">
-          <DialogTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">
-            <Share2 className="w-5 h-5" />
-            Share Collection
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="p-6 bg-[#881ae5] border-none rounded-3xl w-[90vw] max-w-[400px]">
+        {/* Single close button */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-white/80 hover:text-white"
+        >
+          <X className="h-5 w-5" />
+        </button>
 
-        <div className="space-y-6 pt-4">
-          <div>
-            <Label className="text-white mb-2 block">Collection Link</Label>
-            <div className="flex gap-2">
-              <Input
-                value={shareLink}
-                readOnly
-                className="flex-1 bg-white/10 border-white/20 text-white placeholder-white/50"
-              />
-              <Button
-                onClick={handleCopyLink}
-                className="bg-white text-[#881ae5] hover:bg-[#f4f4f5] flex gap-2 items-center transition-colors"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+        <h2 className="text-2xl font-bold text-white mb-6">
+          Share Content
+        </h2>
 
-          <div className="space-y-3">
-            <Label className="text-white mb-2 block">Share on platforms</Label>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="w-full bg-white text-[#881ae5] hover:bg-[#f4f4f5] transition-colors"
-                onClick={() => window.open('https://twitter.com/intent/tweet?url=' + encodeURIComponent(shareLink))}
-              >
-                Twitter
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full bg-white text-[#881ae5] hover:bg-[#f4f4f5] transition-colors"
-                onClick={() => window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(shareLink))}
-              >
-                LinkedIn
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-white mb-2 block">Visibility</Label>
-            <select
-              className="w-full rounded-md border border-white/20 bg-white text-[#881ae5] px-3 py-2 appearance-none cursor-pointer hover:bg-[#f4f4f5] transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
+        <div className="space-y-4">
+          {/* Share link input with copy button */}
+          <div className="bg-white/20 rounded-xl flex items-center overflow-hidden">
+            <input
+              value={shareLink}
+              readOnly
+              className="flex-1 px-4 py-3 bg-transparent border-none text-white focus:outline-none placeholder:text-white/50"
+              placeholder={loading ? "Generating link..." : ""}
+            />
+            <button
+              onClick={handleCopy}
+              className="px-4 py-3 text-white hover:bg-white/10 transition-colors"
             >
-              <option value="public" className="bg-white">Public - Anyone with the link</option>
-              <option value="private" className="bg-white">Private - Only you</option>
-            </select>
+              <Copy className="h-4 w-4" />
+            </button>
           </div>
-        </div>
 
-        <DialogFooter className="flex justify-end pt-4 border-t border-white/20 mt-6">
+          {/* Stop sharing button */}
           <Button
-            onClick={onClose}
-            className="bg-white text-[#881ae5] hover:bg-[#f4f4f5] transition-colors"
+            onClick={handleStopSharing}
+            className="w-full bg-red-500 hover:bg-red-600 text-white py-3 font-medium rounded-xl transition-colors"
           >
-            Done
+            Stop Sharing
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
+}
+
+function generateShareLink() {
+  throw new Error('Function not implemented.');
 }

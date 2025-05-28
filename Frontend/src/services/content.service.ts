@@ -36,21 +36,29 @@ export const contentService = {
     });
   },
 
-  async shareContent(contentId: string, share: boolean) {
-    const response = await api.post('/api/v1/brainybox/share', 
-      { contentId, share },
-      {
-        headers: {
-          token: localStorage.getItem('token')
-        }
-      }
-    );
-    return response.data;
+  async shareContent(share: boolean) {
+    try {
+      const response = await api.post('/api/v1/brainybox/share', { share });
+      return response.data;
+    } catch (error) {
+      console.error('Share error:', error);
+      throw error;
+    }
   },
 
   async getSharedContent(hash: string) {
-    const response = await api.get(`/api/v1/brainybox/~${hash}`);
-    return response.data;
+    try {
+      const response = await api.get(`/api/v1/brainybox/~${hash}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Get shared content error:', error);
+      throw error;
+    }
   }
 };
 
