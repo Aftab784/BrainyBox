@@ -184,6 +184,7 @@ export function SharedContentPage() {
                   id={item._id}
                   type={item.type}
                   link={item.link}
+                  content={item.link}
                   title={item.title}
                   createdAt={item.createdAt}
                   hideControls
@@ -197,11 +198,12 @@ export function SharedContentPage() {
               gap={isMobile ? 4 : 6}
             >
               {data.content.map((item) => (
-                <SocialCard
+                 <SocialCard
                   key={item._id}
                   id={item._id}
                   type={item.type}
                   link={item.link}
+                  content={item.link}
                   title={item.title}
                   createdAt={item.createdAt}
                   hideControls

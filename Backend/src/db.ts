@@ -8,13 +8,34 @@ const userSchema = new Schema({
     Name: String,
 });
 
-const ContentSchema = new Schema({
-    title: String,
-    link: String,
+// Update the Content schema
+const ContentSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  type: {
     type: String,
-    userId: {type: mongoose.Types.ObjectId, ref: 'User', required: true },
-})
-
+    required: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  link: {
+    type: String,
+    required: true
+  },
+  content: {
+    type: String,
+    default: '' // Add this field
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
 
 const LinkSchema = new Schema({
     hash: String,
@@ -43,6 +64,6 @@ function model(name: string, schema: mongoose.Schema) {
 }
 
 export const UserModel = model("User", userSchema);
-export const ContentModel = model("Content", ContentSchema);
+export const ContentModel = mongoose.model('Content', ContentSchema);
 export const LinksModel = model("Links", LinkSchema);
 export const ShareLinkModel = mongoose.model('ShareLink', shareLinkSchema);

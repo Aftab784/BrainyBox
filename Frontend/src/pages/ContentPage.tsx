@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-import { User, LogOut, BookOpen, LayoutGrid, LayoutList } from "lucide-react";
+import { User, LogOut, BookOpen, LayoutGrid, LayoutList, Edit2 } from "lucide-react";
 import { ShareIcon } from "@/icons/ShareIcon";
 import { PlusIcon } from "@/icons/PlusIcon";
 import {
@@ -13,7 +13,7 @@ import { AppSidebar } from "@/components/ui/app-sidebar";
 import { Dashboard } from "../components/ui/DashBoard";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { SocialCard, MasonryGrid } from "@/components/ui/Card";
-import { CreateContentModel } from "../components/ui/CreateContentModel";
+import { CreateContentModal } from "../components/ui/CreateContentModel";
 import { ShareContentModal } from "../components/ui/ShareContent";
 import { WelcomeGuide } from "@/components/ui/Welcome";
 import { Button } from "@/components/ui/Button";
@@ -29,7 +29,8 @@ type SocialCardType =
   | "linkedin"
   | "notion"
   | "eraser"
-  | "excalidraw";
+  | "excalidraw"
+  | "note";
 
 interface ContentItem {
   _id: string;
@@ -37,6 +38,7 @@ interface ContentItem {
   link: string;
   title: string;
   userId: string;
+  content?: string;
   createdAt?: string; // Added createdAt as optional
 }
 
@@ -51,6 +53,7 @@ const ContentPage: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedType, setSelectedType] = useState<SocialCardType | null>(null);
 
   // Mobile detection
   useEffect(() => {
@@ -125,6 +128,28 @@ const ContentPage: React.FC = () => {
       console.log('Content after deletion:', newContent);
       return newContent;
     });
+  };
+
+  const handleAddNote = () => {
+    setIsCreateModalOpen(true);
+    // Pre-select note type
+    setSelectedType("note");
+  };
+
+  const handleEdit = async (id: string, newContent: string) => {
+    try {
+      await contentService.updateContent(id, newContent);
+      setContent(prevContent => 
+        prevContent.map(item => 
+          item._id === id 
+            ? { ...item, content: newContent }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update content:', error);
+      toast.error("Failed to update content");
+    }
   };
 
   // Filter content
@@ -245,8 +270,10 @@ const ContentPage: React.FC = () => {
                             type={item.type}
                             link={item.link}
                             title={item.title}
+                            content={item.content || item.link} // Update this line
                             createdAt={item.createdAt || new Date().toISOString()}
                             onDelete={handleDelete}
+                            onEdit={handleEdit} // Add this
                             className="w-full"
                           />
                         ))}
@@ -263,8 +290,10 @@ const ContentPage: React.FC = () => {
                             type={item.type}
                             link={item.link}
                             title={item.title}
+                            content={item.content || item.link} // Update this line
                             createdAt={item.createdAt || new Date().toISOString()}
                             onDelete={handleDelete}
+                            onEdit={handleEdit} // Add this
                             className="w-full"
                           />
                         ))}
@@ -278,16 +307,24 @@ const ContentPage: React.FC = () => {
         </SidebarInset>
       </div>
       
-      <CreateContentModel
+      <CreateContentModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleAddContent}
+        selectedType={selectedType}
       />
       <ShareContentModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />
       <ToastContainer />
+      {/* Add a floating action button for quick note */}
+      <Button
+        onClick={handleAddNote}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-yellow-500 hover:bg-yellow-600"
+      >
+        <Edit2 className="h-6 w-6 text-white" />
+      </Button>
     </SidebarProvider>
   );
 };

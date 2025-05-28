@@ -59,6 +59,23 @@ export const contentService = {
       console.error('Get shared content error:', error);
       throw error;
     }
+  },
+
+  async updateContent(id: string, content: string) {
+    try {
+      const response = await api.put(`/api/v1/content/${id}`, 
+        { content },
+        {
+          headers: {
+            token: localStorage.getItem('token')
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Update content error:', error);
+      throw error;
+    }
   }
 };
 

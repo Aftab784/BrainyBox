@@ -125,20 +125,27 @@ interface CustomRequest extends express.Request {
 }
 
 app.post("/api/v1/content", usermiddleware, async (req: CustomRequest, res: express.Response) => {
-  const { link, type, title } = req.body as ContentRequestBody;
+  try {
+    const { link, type, title, content } = req.body;
 
-  await ContentModel.create({
-    link,
-    type,
-    title,
-    userId: req.userId,
-    tags: []
-  });
+    const newContent = await ContentModel.create({
+      link,
+      type,
+      title,
+      content, // Add this
+      userId: req.userId
+    });
 
-  res.json({
-    message: "Content Added"
-  });
-
+    res.status(200).json({
+      message: "Content Added",
+      content: newContent
+    });
+  } catch (error) {
+    console.error("Error creating content:", error);
+    res.status(500).json({ 
+      message: "Failed to create content" 
+    });
+  }
 });
 
 app.get("/api/v1/content", usermiddleware,async (req:CustomRequest,res: express.Response) => {
@@ -274,6 +281,57 @@ app.get("/api/v1/brainybox/~:shareLink", async (req: express.Request, res: expre
     res.status(500).json({
       message: "Server error",
       error: error?.message || 'Unknown error'
+    });
+  }
+});
+
+interface UpdateContentBody {
+  content: string;
+}
+
+// Add this PUT endpoint for content updates
+app.put("/api/v1/content/:id", usermiddleware, async (req: CustomRequest, res: express.Response) => {
+  try {
+    const contentId = req.params.id;
+    const { content } = req.body;
+    const userId = req.userId;
+
+    if (!contentId || !content) {
+      res.status(400).json({
+        message: "Content ID and updated content are required"
+      });
+      return;
+    }
+
+    const updatedContent = await ContentModel.findOneAndUpdate(
+      { 
+        _id: contentId, 
+        userId 
+      },
+      { 
+        $set: { content } 
+      },
+      { 
+        new: true 
+      }
+    );
+
+    if (!updatedContent) {
+      res.status(404).json({
+        message: "Content not found or you don't have permission to update it"
+      });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Content updated successfully",
+      content: updatedContent
+    });
+
+  } catch (error) {
+    console.error("Error updating content:", error);
+    res.status(500).json({
+      message: "Failed to update content"
     });
   }
 });

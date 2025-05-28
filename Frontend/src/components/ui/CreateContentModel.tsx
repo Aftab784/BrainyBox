@@ -3,47 +3,68 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from './Button';
 import { Input } from './input';
 import { Label } from './label';
+import { Textarea } from './textarea'; // Import Textarea component
 import { toast } from 'sonner';
 import api from '@/services/api';
+import { Edit2 } from 'lucide-react'; // Import Edit2 icon
+import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
+
+type SocialCardType = 'youtube' | 'twitter' | 'linkedin' | 'instagram' | 'notion' | 'excalidraw' | 'eraser' | 'note';
+
+interface ContentType {
+  value: SocialCardType;
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  description?: string;
+}
 
 interface CreateContentModelProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (content: {
-    title: string;
-    type: string;
-    link: string;
-  }) => void;
+  onSubmit: (newContent: { title: string; type: string; link: string }) => void;
+  selectedType?: SocialCardType | null;
 }
 
-export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentModelProps) {
+export function CreateContentModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  selectedType = null
+}: CreateContentModelProps) {
   const [title, setTitle] = React.useState('');
   const [type, setType] = React.useState('youtube');
   const [link, setLink] = React.useState('');
+  const [content, setContent] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
+  // Update the handleSubmit function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await api.post('/api/v1/content', {
+      const payload = {
         title,
         type,
-        link
-      }, {
+        link: type === 'note' ? content : link, // Use content for notes
+        content: type === 'note' ? content : link // Store content separately
+      };
+
+      const response = await api.post('/api/v1/content', payload, {
         headers: {
           token: localStorage.getItem('token')
         }
       });
 
       toast.success('Content added successfully!');
-      onSubmit({ title, type, link });
+      onSubmit(payload); // Pass the full payload
       
       // Reset form
       setTitle('');
       setType('youtube');
       setLink('');
+      setContent('');
       onClose();
     } catch (error: any) {
       console.error('Failed to add content:', error);
@@ -55,70 +76,95 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-[425px] p-4 sm:p-6 bg-[#881ae5] text-white">
-        <DialogHeader className="border-b border-white/20 pb-4">
-          <DialogTitle className="text-lg sm:text-xl font-semibold">
+      <DialogContent className="bg-[#881ae5] border-none text-white">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-white">
             Add New Content
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Title Input */}
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-white">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter content title"
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-              required
-            />
+            <Label className="text-white">Title</Label>
+            <div className="relative">
+              {type === "note" && (
+                <Edit2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
+              )}
+              <Input
+                placeholder="Enter content title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={cn(
+                  "bg-white/20 border-white/30 text-white placeholder:text-white/60",
+                  type === "note" && "pl-10"
+                )}
+              />
+            </div>
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="type" className="text-white">Type</Label>
-            <select
-              id="type"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full rounded-md border border-white/20 bg-white text-[#881ae5] px-3 py-2 appearance-none cursor-pointer hover:bg-[#f4f4f5] transition-colors"
-              required
-            >
-              <option value="youtube">YouTube</option>
-              <option value="twitter">Twitter</option>
-              <option value="linkedin">LinkedIn</option>
-              <option value="instagram">Instagram</option>
-              <option value="notion">Notion</option>
-              <option value="excalidraw">Excalidraw</option>
-              <option value="eraser">Eraser</option>
-            </select>
+            <Label className="text-white">Type</Label>
+            <Select
+                          value={type}
+                          onValueChange={(value: string) => setType(value as SocialCardType)}
+                        >
+                          <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                            <SelectValue placeholder="Select content type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {contentTypes.map((type: ContentType) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                <div className="flex items-center gap-2">
+                                  {type.icon && <type.icon className="h-4 w-4" />}
+                                  <span>{type.label}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="link" className="text-white">Link</Label>
-            <Input
-              id="link"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              placeholder="Enter content link"
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-              required
-            />
-          </div>
-          
-          <DialogFooter className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-white/20">
-            <Button 
-              variant="outline" 
+
+          {/* Note Content Area */}
+          {type === "note" ? (
+            <div className="space-y-2">
+              <Label className="text-white">Content</Label>
+              <Textarea
+                placeholder="Write your note here..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="min-h-[200px] bg-white/20 border-white/30 text-white placeholder:text-white/60 resize-none"
+                required
+              />
+              <div className="text-xs text-white/60">
+                Characters: {content.length}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label className="text-white">Link</Label>
+              <Input
+                placeholder="Enter content link"
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
+                required
+              />
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
               onClick={onClose}
-              disabled={loading}
-              className="w-full sm:w-auto border-white text-white hover:bg-white/20 transition-colors"
+              className="text-white hover:bg-white/20"
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full sm:w-auto bg-white text-[#881ae5] hover:bg-[#f4f4f5] transition-colors"
+              className="bg-white text-[#881ae5] hover:bg-white/90"
             >
               {loading ? 'Adding...' : 'Add Content'}
             </Button>
@@ -128,6 +174,22 @@ export function CreateContentModel({ isOpen, onClose, onSubmit }: CreateContentM
     </Dialog>
   );
 }
+
+const contentTypes: ContentType[] = [
+  {
+    value: "note",
+    label: "Note",
+    icon: Edit2,
+    description: "Create a personal note"
+  },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'twitter', label: 'Twitter' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'notion', label: 'Notion' },
+  { value: 'excalidraw', label: 'Excalidraw' },
+  { value: 'eraser', label: 'Eraser' },
+];
 
 
 
