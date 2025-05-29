@@ -93,10 +93,10 @@ function GuideCard({ title, description, type, icon }: GuideCardProps) {
 // Update the guides data
 const guides = [
  {
-    title: "Why Use BrainBox?",
+    title: "Why Use BrainyBox?",
     description: (
       <div className="space-y-4">
-        <p className="text-sm">Streamline your digital life with BrainBox - your all-in-one content hub.</p>
+        <p className="text-sm">Streamline your digital life with BrainyBox - your all-in-one content hub.</p>
         <ul className="space-y-2">
           <li className="flex items-start gap-3">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
@@ -122,10 +122,10 @@ const guides = [
     icon: <Layout className="w-5 h-5 text-purple-600" />
   },
   {
-    title: "Getting Started with BrainBox",
+    title: "Getting Started with BrainyBox",
     description: (
       <div className="space-y-4">
-        <p className="text-sm">BrainBox helps you save and organize content from any platform in one place.</p>
+        <p className="text-sm">BrainyBox helps you save and organize content from any platform in one place.</p>
         <ul className="space-y-2">
           <li className="flex items-start gap-3">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
@@ -620,7 +620,7 @@ export function Dashboard() {
           {/* Copyright */}
           <div className="mt-16 pt-8 border-t border-white/20">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-white/80">© 2024 BrainBox. All rights reserved.</p>
+              <p className="text-white/80">© 2024 BrainyBox. All rights reserved.</p>
               <div className="flex items-center gap-8">
                 <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Privacy Policy</a>
                 <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Terms of Service</a>

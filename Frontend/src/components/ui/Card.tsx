@@ -739,6 +739,7 @@ const Embed: React.FC<EmbedProps> = ({
       return (
         <div className="w-full min-h-[100px] p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg">
           <p className="text-gray-700 whitespace-pre-wrap">
+           
             {type === "note" ? content : link}
           </p>
         </div>
@@ -951,6 +952,7 @@ interface SocialCardProps extends React.ComponentProps<"div"> {
   id: string; // Add this
   onDelete?: (id: string) => void; // Add this
   onEdit?: (id: string, newContent: string) => void; // Add this
+  onShare?: (id: string) => void; // Add this
 }
 
 export function SocialCard({
@@ -965,6 +967,7 @@ export function SocialCard({
   id,
   onDelete,
   onEdit,
+  onShare,
   ...props
 }: SocialCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);

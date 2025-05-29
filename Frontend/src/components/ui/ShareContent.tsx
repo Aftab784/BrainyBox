@@ -15,9 +15,31 @@ interface ShareContentModalProps {
   contentId?: string;
 }
 
-export function  ShareContentModal({ isOpen, onClose }: ShareContentModalProps) {
+export function ShareContentModal({ isOpen, onClose }: ShareContentModalProps) {
   const [shareLink, setShareLink] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+
+  const generateShareLink = async () => {
+    try {
+      setLoading(true);
+      // Call the API with share=true
+      const response = await contentService.shareContent(true) as ShareResponse;
+      
+      if (response && response.hash) {
+        // Construct the full share URL
+        const shareUrl = `${window.location.origin}/shared/${response.hash}`;
+        setShareLink(shareUrl);
+        toast.success('Share link generated!');
+      } else {
+        throw new Error('Failed to generate share link');
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+      toast.error('Failed to generate share link');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Generate share link when modal opens
   React.useEffect(() => {
@@ -25,21 +47,6 @@ export function  ShareContentModal({ isOpen, onClose }: ShareContentModalProps) 
       generateShareLink();
     }
   }, [isOpen]);
-
-  const generateShareLink = async () => {
-    try {
-      setLoading(true);
-      const response = await contentService.shareContent(true) as ShareResponse;
-      if (response && response.hash) {
-        const url = `${window.location.origin}/shared/${response.hash}`;
-        setShareLink(url);
-      }
-    } catch (error) {
-      toast.error("Failed to generate share link");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCopy = async () => {
     try {
@@ -105,5 +112,4 @@ export function  ShareContentModal({ isOpen, onClose }: ShareContentModalProps) 
     </Dialog>
   );
 }
-
 

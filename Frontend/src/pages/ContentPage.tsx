@@ -255,13 +255,13 @@ const ContentPage: React.FC = () => {
               {/* Content Section */}
               <div className="max-w-7xl mx-auto p-4">
                 {isLoading ? (
-                  <div className="flex justify-center items-center h-64">
+                  <div className="flex justify-center items-center min-h-[200px]">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
                   </div>
                 ) : filteredContent.length === 0 && !activeFilter ? (
                   <WelcomeGuide />
                 ) : (
-                  <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 w-full">
+                  <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                     {isMobile || layout === "list" ? (
                       <div className="flex flex-col gap-4">
                         {filteredContent.map((item) => (
@@ -281,9 +281,8 @@ const ContentPage: React.FC = () => {
                       </div>
                     ) : (
                       <MasonryGrid 
-                        columns={columns} 
-                        gap={6}
-                        className="w-full"
+                        columns={isMobile ? 1 : columns} 
+                        gap={isMobile ? 4 : 6}
                       >
                         {filteredContent.map((item) => (
                           <SocialCard
@@ -292,11 +291,11 @@ const ContentPage: React.FC = () => {
                             type={item.type}
                             link={item.link}
                             title={item.title}
-                            content={item.content || item.link}
+                            content={item.content || item.link} // Update this line
                             createdAt={item.createdAt || new Date().toISOString()}
                             onDelete={handleDelete}
-                            onEdit={handleEdit}
-                            className="w-full" // Make sure cards take full width
+                            onEdit={handleEdit} // Add this
+                            className="w-full"
                           />
                         ))}
                       </MasonryGrid>
@@ -331,7 +330,6 @@ const ContentPage: React.FC = () => {
   );
 };
 
-// SocialCard wrapper component
 
 
 export default ContentPage;

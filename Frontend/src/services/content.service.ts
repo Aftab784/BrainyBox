@@ -10,13 +10,25 @@ export interface Content {
 }
 
 export const contentService = {
-  async createContent(content: { title: string; type: string; link: string; tags: string[] }) {
-    const response = await api.post('/api/v1/content', content, {
-      headers: {
-        token: localStorage.getItem('token')
-      }
-    })
-    return response.data
+  async createContent(content: { title: string; type: string; link: string; content?: string }) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    try {
+      const response = await api.post('/api/v1/content', content, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          token: token
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Create content error:', error);
+      // Don't remove token on content creation errors
+      throw error;
+    }
   },
 
   async getMyContent() {

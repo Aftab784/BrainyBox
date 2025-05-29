@@ -11,11 +11,25 @@ import cors from 'cors'
 
 const app = express()
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://brainybox-aftab.vercel.app',
+  'https://brainybox-aftab-8unr25qne-aftab784s-projects.vercel.app'
+];
+
 // Add CORS middleware before routes
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}))
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'token']
+}));
 
 app.use(express.json());
 

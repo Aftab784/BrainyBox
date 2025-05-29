@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { Edit2 } from 'lucide-react'; // Import Edit2 icon
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
+import { contentService } from '@/services/content.service'; // Import contentService
+
 
 // First update the SocialCardType type
 type SocialCardType = 
@@ -59,25 +61,40 @@ export function CreateContentModal({
     setLoading(true);
 
     try {
+      // Check for token before making the request
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Please login to add content');
+        window.location.href = '/login';
+        return;
+      }
+
       const payload = {
         title,
         type,
-        link: type === 'note' ? content : link, // Use content for notes
-        content: type === 'note' ? content : link // Store content separately
+        link: type === 'note' ? content : link,
+        content: type === 'note' ? content : link
       };
 
+      const response = await contentService.createContent(payload) as { title?: string; type?: string; link?: string };
       
-
-      toast.success('Content added successfully!');
-      onSubmit(payload); // Pass the full payload
-      
-      // Reset form
-      setTitle('');
-      setType('youtube');
-      setLink('');
-      setContent('');
-      onClose();
+      if (response) {
+        toast.success('Content added successfully!');
+        onSubmit({
+          title: response.title || title,
+          type: response.type || type,
+          link: response.link || (type === 'note' ? content : link)
+        });
+        onClose();
+        
+        // Reset form
+        setTitle('');
+        setType('youtube');
+        setLink('');
+        setContent('');
+      }
     } catch (error: any) {
+      // Don't redirect on content creation errors
       console.error('Failed to add content:', error);
       toast.error(error.response?.data?.message || 'Failed to add content');
     } finally {
@@ -337,6 +354,5 @@ const contentTypes: ContentType[] = [
     )
   }
 ].sort((a, b) => a.label.localeCompare(b.label)); // Sort alphabetically
-
 
 
