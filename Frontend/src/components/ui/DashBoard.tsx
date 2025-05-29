@@ -13,7 +13,8 @@ import { Label } from './label';
 import { Textarea } from './textarea';
 import { Illustration } from '@/assets/illustration';
 import { toast } from 'react-toastify';
-
+import { cn } from '@/lib/utils';
+import api from '@/services/api';
 
 // Define ContentItem interface for type safety
 interface ContentItem {
@@ -34,21 +35,26 @@ interface PlatformStats {
 // PlatformCard component for rendering platform stats
 function PlatformCard({ name, count, gradient, icon }: PlatformStats) {
   return (
-    <Card className={`${gradient} p-4 transition-all duration-200 hover:scale-[1.02]`}>
-      <div className="flex items-center gap-3">
+    <div className={cn(
+      "rounded-[20px] border border-gray-100",
+      "transition-all duration-300 transform hover:scale-105",
+      "hover:shadow-xl hover:border-purple-200",
+      gradient || "bg-white"
+    )}>
+      <div className="flex items-center gap-3 p-4">
         <div className="rounded-lg bg-white/20 p-2.5">
           {icon}
         </div>
         <div>
-          <CardTitle className="text-sm font-medium text-white/90">
+          <h3 className="text-sm font-medium text-white/90">
             {name}
-          </CardTitle>
-          <CardContent className="text-2xl font-bold text-white mt-0.5">
+          </h3>
+          <p className="text-2xl font-bold text-white mt-0.5">
             {count}
-          </CardContent>
+          </p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -60,23 +66,25 @@ interface StatsCardProps {
   gradient: string;
 }
 
-export function StatsCard({ title, value, icon, gradient }: StatsCardProps) {
+function StatsCard({ title, value, icon, gradient }: StatsCardProps) {
   return (
-    <Card className={`${gradient} backdrop-blur-sm p-6`}>
+    <div className={cn(
+      "rounded-[20px] border border-white/30 bg-white/10 backdrop-blur-xl",
+      "p-6 transition-all duration-200"
+    )}>
       <div className="flex items-center gap-4">
         <div className="rounded-full bg-white/20 p-3">
           {icon}
         </div>
         <div>
-          <CardTitle className="text-sm font-medium text-white/80">
-            {title}
-          </CardTitle>
-          <CardContent className="text-3xl font-bold text-white mt-1">
+          <h3 className="text-sm font-medium text-white/80">{title}</h3>
+          <p className="text-3xl font-bold text-white mt-1">
+            {/* Show loading state */}
             {value}
-          </CardContent>
+          </p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -88,23 +96,25 @@ interface GuideCardProps {
   icon: React.ReactNode;
 }
 
-// Update the GuideCard component for a cleaner look
+// Update the GuideCard component with better hover animations
 function GuideCard({ title, description, type, icon }: GuideCardProps) {
   return (
-    <div className="bg-white rounded-xl p-6 hover:shadow-md transition-all duration-200">
+    <div className="group bg-white rounded-xl p-6 hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 cursor-pointer border border-transparent hover:border-purple-100">
       <div className="flex flex-col gap-4">
         <div className="flex items-start gap-4">
-          <div className="p-2.5 rounded-lg bg-purple-50">
+          <div className="p-2.5 rounded-lg bg-purple-50 group-hover:bg-purple-100 transition-colors duration-300">
             {icon}
           </div>
           <div className="space-y-2">
-            <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100/50 text-purple-700">
+            <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100/50 text-purple-700 group-hover:bg-purple-200/50 transition-colors duration-300">
               {type === 'guide' ? 'Getting Started' : 'Tips & Tricks'}
             </span>
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-purple-700 transition-colors duration-300">
+              {title}
+            </h3>
           </div>
         </div>
-        <div className="text-gray-600 space-y-3">
+        <div className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
           {description}
         </div>
       </div>
@@ -114,7 +124,7 @@ function GuideCard({ title, description, type, icon }: GuideCardProps) {
 
 // Update the guides data
 const guides = [
-  {
+ {
     title: "Why Use BrainBox?",
     description: (
       <div className="space-y-4">
@@ -145,14 +155,30 @@ const guides = [
   },
   {
     title: "Getting Started with BrainBox",
-    description: `BrainBox helps you save and organize content from any platform in one place.
-
-• Save content from your favorite platforms
-• Organize with smart tagging
-• Quick search and filter
-• Track your knowledge growth
-
-Get started in seconds - just click "Add Content" and start building your digital library.`,
+    description: (
+      <div className="space-y-4">
+        <p className="text-sm">BrainBox helps you save and organize content from any platform in one place.</p>
+        <ul className="space-y-2">
+          <li className="flex items-start gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
+            <span className="text-sm">Save content from your favorite platforms</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
+            <span className="text-sm">Organize with smart tagging</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
+            <span className="text-sm">Quick search and filter</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2" />
+            <span className="text-sm">Track your knowledge growth</span>
+          </li>
+        </ul>
+        <p className="text-sm font-medium text-purple-600">Get started in seconds - just click "Add Content" and start building your digital library.</p>
+      </div>
+    ),
     type: 'guide' as const,
     icon: <LayoutDashboard className="w-6 h-6 text-purple-600" />
   }
@@ -166,33 +192,88 @@ export function Dashboard() {
     instagram: 0,
     notion: 0,
     eraser: 0,
-    excalidraw: 0
+    excalidraw: 0,
+    note: 0,
+    medium: 0,
+    github: 0,
+    figma: 0,
+    codepen: 0,
+    googledocs: 0,
+    spotify: 0,
+    miro: 0,
+    facebook: 0
   });
-
   const [totalContent, setTotalContent] = useState(0);
   const [activeTags, setActiveTags] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get content from localStorage or your API
-    const savedContent = JSON.parse(localStorage.getItem('brainbox_content') || '[]') as ContentItem[];
-    
-    // Calculate platform counts
-    const counts = savedContent.reduce((acc, item) => {
-      acc[item.platform] = (acc[item.platform] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const fetchContent = async () => {
+      try {
+        interface ApiResponse {
+          content: any[];
+        }
 
-    // Calculate unique tags
-    const uniqueTags = new Set(
-      savedContent.flatMap(item => item.tags || [])
-    );
+        const response = await api.get<ApiResponse>('/api/v1/content', {
+          headers: {
+            token: localStorage.getItem('token')
+          }
+        });
 
-    setPlatformCounts(counts);
-    setTotalContent(savedContent.length);
-    setActiveTags(uniqueTags.size);
+        const content = response.data?.content || [];
+
+        // Calculate platform counts
+        const counts = content.reduce((acc: Record<string, number>, item: any) => {
+          acc[item.type] = (acc[item.type] || 0) + 1;
+          return acc;
+        }, {});
+
+        // Calculate unique tags
+        const uniqueTags = new Set(
+          content.flatMap((item: any) => item.tags || [])
+        );
+
+        setPlatformCounts(counts);
+        setTotalContent(content.length);
+        setActiveTags(uniqueTags.size);
+      } catch (error) {
+        console.error('Failed to fetch content:', error);
+        toast.error('Failed to load dashboard data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchContent();
   }, []);
 
-  // Update platforms data to include default SVG icons
+  // Update StatsCard to show loading state
+  function StatsCard({ title, value, icon, gradient }: StatsCardProps) {
+    return (
+      <div className={cn(
+        "rounded-[20px] border border-white/30 bg-white/10 backdrop-blur-xl",
+        "p-6 transition-all duration-200"
+      )}>
+        <div className="flex items-center gap-4">
+          <div className="rounded-full bg-white/20 p-3">
+            {icon}
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-white/80">{title}</h3>
+            <p className="text-3xl font-bold text-white mt-1">
+              {isLoading ? (
+                <span className="animate-pulse">...</span>
+              ) : (
+                value
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Update platforms array to use dynamic counts
   const platforms: PlatformStats[] = [
     {
       id: 'youtube',
@@ -271,8 +352,85 @@ export function Dashboard() {
           <path d="M18.277 6.321L12.375.419a1.429 1.429 0 0 0-2.021 0L4.452 6.321a1.429 1.429 0 0 0 0 2.021l5.902 5.902a1.429 1.429 0 0 0 2.021 0l5.902-5.902a1.429 1.429 0 0 0 0-2.021zM2.42 13.694l-1.17 1.17a1.429 1.429 0 0 0 0 2.021l5.902 5.902a1.429 1.429 0 0 0 2.021 0l1.17-1.17L4.44 15.714zm19.16 0l-5.902 5.902 1.17 1.17a1.429 1.429 0 0 0 2.021 0l5.902-5.902a1.429 1.429 0 0 0 0-2.021l-1.17-1.17z" />
         </svg>
       )
-    }
-  ];
+    },
+    {
+      id: 'facebook',
+      name: 'Facebook',
+      count: platformCounts.facebook || 0,
+      gradient: 'bg-gradient-to-r from-[#1877F2] to-[#166CD9]',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+      )
+    },
+    {
+      id: 'medium',
+      name: 'Medium',
+      count: platformCounts.medium || 0,
+      gradient: 'bg-gradient-to-r from-[#02B875] to-[#02B875]',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+          <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
+          </svg>
+      )
+    },
+    {
+      id: 'github',
+      name: 'GitHub',
+      count: platformCounts.github || 0,
+      gradient: 'bg-gradient-to-r from-[#24292e] to-[#2b3137]',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/>
+      </svg>
+    )
+  },
+  {
+    id: 'codepen',
+    name: 'CodePen',
+    count: platformCounts.codepen || 0,
+    gradient: 'bg-gradient-to-r from-[#1E1F26] to-[#2F3138]',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+        <path d="M24 8.182l-.018-.087-.017-.05c-.01-.024-.018-.05-.03-.075-.003-.018-.015-.034-.02-.05l-.035-.067-.03-.05-.044-.06-.046-.045-.06-.045-.046-.03-.06-.044-.044-.04-.015-.02L12.58.19c-.347-.232-.796-.232-1.142 0L.453 7.502l-.015.015-.044.035-.06.05-.038.04-.05.056-.037.045-.05.06c-.02.017-.03.03-.03.046l-.05.06-.02.06c-.02.01-.02.04-.03.07l-.01.05C0 8.12 0 8.15 0 8.18v7.497c0 .044.003.09.01.135l.01.046c.005.03.01.06.02.086l.015.05c.01.027.016.053.027.075l.022.05c0 .01.015.04.03.06l.03.04c.015.01.03.04.045.06l.03.04.04.04c.01.013.01.03.03.03l.06.042.04.03.01.014 10.97 7.33c.164.12.375.163.57.163s.39-.06.57-.18l10.99-7.28.014-.01.046-.037.06-.043.048-.036.052-.058.033-.045.04-.06.03-.05.03-.07.016-.052.03-.077.015-.045.03-.08v-7.5c0-.05 0-.095-.016-.14l-.014-.045.044.003zm-11.99 6.28l-3.65-2.44 3.65-2.442 3.65 2.44-3.65 2.44zm-1.216-6.18l-4.473 3.003-3.612-2.415L12.183 3.2v5.09zm-6.343 3.75l2.53 1.694-2.53 1.69v-3.38zm6.343 3.75V19l-9.3-6.212 3.61-2.41 5.69 3.806zm2.432 0l5.69-3.805 3.61 2.41L12.615 19v-5.09zm6.343-3.75v3.38l-2.53-1.69 2.53-1.694z"/>
+      </svg>
+    )
+  },
+  {
+    id: 'googledocs',
+    name: 'Google Docs',
+    count: platformCounts.googledocs || 0,
+    gradient: 'bg-gradient-to-r from-[#4285F4] to-[#2A75F3]',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+        <path d="M14.727 6.727H0V24h17.455V9.455L14.727 6.727zM3.879 19.395v-2.969h9.697v2.969H3.879zm9.697-4.848H3.879v-2.97h9.697v2.97zm0-4.849H3.879V6.727h9.697v2.971zM24 6.727l-6.545-6.545v6.545H24z"/>
+      </svg>
+    )
+  },
+  {
+    id: 'spotify',
+    name: 'Spotify',
+    count: platformCounts.spotify || 0,
+    gradient: 'bg-gradient-to-r from-[#1DB954] to-[#1ED760]',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+      </svg>
+    )
+  },
+  {
+    id: 'miro',
+    name: 'Miro',
+    count: platformCounts.miro || 0,
+    gradient: 'bg-gradient-to-r from-[#FFD02F] to-[#FFC400]',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+        <path d="M17.392 0H6.608C2.958 0 0 2.958 0 6.608v10.784C0 21.042 2.958 24 6.608 24h10.784C21.042 24 24 21.042 24 17.392V6.608C24 2.958 21.042 0 17.392 0zM12 18.4c-3.6 0-6.4-2.8-6.4-6.4S8.4 5.6 12 5.6s6.4 2.8 6.4 6.4-2.8 6.4-6.4 6.4z"/>
+      </svg>
+    )
+  }
+].sort((a, b) => a.name.localeCompare(b.name));
 
   const [email, setEmail] = React.useState('');
   const [message, setMessage] = React.useState('');
@@ -312,45 +470,37 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-[#881ae5] to-purple-700 text-white">
+    <div className="min-h-screen bg-white">
+      {/* Header Section with purple background */}
+      <div className="bg-[#881ae5]">
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-          <div className="flex items-center gap-3 mb-6">
-            {/* Add Sidebar Trigger */}
+          <div className="flex items-center gap-3 mb-8">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="md:hidden text-white" />
-              <LayoutDashboard className="w-10 h-10" />
-              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
             </div>
           </div>
           
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
             <StatsCard
               title="Total Content"
               value={totalContent}
               icon={<Layout className="w-5 h-5 text-white" />}
-              gradient="bg-white/10"
-            />
-            <StatsCard
-              title="Active Tags"
-              value={activeTags}
-              icon={<Hash className="w-5 h-5 text-white" />}
-              gradient="bg-white/10"
+              gradient=""
             />
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 -mt-8">
-        {/* Platform Cards */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+      {/* Main content with white background */}
+      <div className="max-w-7xl mx-auto px-4 mt-4 sm:px-6 lg:px-8">
+        {/* Platform Summary */}
+        <div className="bg-white rounded-[20px] shadow-lg p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
             Platform Summary
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {platforms.map((platform) => (
               <PlatformCard 
                 key={platform.id}
@@ -368,15 +518,15 @@ export function Dashboard() {
               Quick Actions
             </h2>
             <div className="space-y-3">
-              <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-colors">
-                <PlusCircle className="w-5 h-5 text-purple-600" />
+              <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-all duration-300 ease-in-out transform hover:translate-x-1 hover:shadow-md">
+                <PlusCircle className="w-5 h-5 text-purple-600 transition-transform duration-300 group-hover:scale-110" />
                 <span>Add New Content</span>
               </button>
-              <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-colors">
+              <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-all duration-300 ease-in-out transform hover:translate-x-1 hover:shadow-md">
                 <Tag className="w-5 h-5 text-purple-600" />
-                <span>Manage Tags</span>
+                <span>Filter the Content</span>
               </button>
-              <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-colors">
+              <button className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-purple-50 text-gray-700 transition-all duration-300 ease-in-out transform hover:translate-x-1 hover:shadow-md">
                 <Share2 className="w-5 h-5 text-purple-600" />
                 <span>Share Collection</span>
               </button>
@@ -415,71 +565,104 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Contact Section */}
-      <div className="mt-16 bg-gradient-to-br from-[#881ae5] to-purple-700 text-white">
+      {/* Footer Section with purple background */}
+      <div className="bg-[#881ae5] mt-16">
         <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-            {/* Contact Info */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-white/10">
-                  <MessageSquare className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-white">Get in Touch</h2>
-                  <p className="text-white/80 mt-2 text-lg">Have feedback or questions? Let me know!</p>
-                </div>
-              </div>
-              
-              <div className="space-y-4 mt-8">
-                <div className="flex items-center gap-3 text-white/80">
-                  <Mail className="w-5 h-5" />
-                  <span>support@brainybox.com</span>
-                </div>
-                {/* Add illustration below email */}
-                <div className="mt-0  opacity-80">
-                  <Illustration />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Home</a>
+                </li>
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Dashboard</a>
+                </li>
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Content Library</a>
+                </li>
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Settings</a>
+                </li>
+              </ul>
             </div>
 
-            {/* Contact Form */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 sm:p-8">
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white text-sm">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                  />
-                </div>
+            {/* Resources */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Resources</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Documentation</a>
+                </li>
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">API Reference</a>
+                </li>
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Guides</a>
+                </li>
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Updates</a>
+                </li>
+              </ul>
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="message" className="text-white text-sm">Message</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Your message here..."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    required
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 min-h-[160px]"
-                  />
-                </div>
+            {/* Connect */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Connect</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200 flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Contact Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200 flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    Discord Community
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-200 flex items-center gap-2">
+                    <Send className="w-4 h-4" />
+                    Twitter
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-white text-[#881ae5] hover:bg-white/90 transition-colors font-medium"
+            {/* Newsletter */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Stay Updated</h3>
+              <p className="text-white/80 mb-4">Get the latest updates and news straight to your inbox.</p>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white"
+                />
+                <Button 
+                  type="submit" 
                   disabled={isSubmitting}
+                  className="w-full bg-white text-purple-600 hover:bg-white/90"
                 >
-                  <Send className="w-4 h-4 mr-2" />
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                  {isSubmitting ? 'Subscribing...' : 'Subscribe'}
                 </Button>
               </form>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-16 pt-8 border-t border-white/20">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-white/80">© 2024 BrainBox. All rights reserved.</p>
+              <div className="flex items-center gap-8">
+                <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Privacy Policy</a>
+                <a href="#" className="text-white/80 hover:text-white transition-colors duration-200">Terms of Service</a>
+              </div>
             </div>
           </div>
         </div>

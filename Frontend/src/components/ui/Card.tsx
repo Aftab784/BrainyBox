@@ -1,6 +1,11 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Check, Pen as PenIcon, Share as ShareIcon, Trash as TrashIcon } from 'lucide-react';
+import {
+  Check,
+  Pen as PenIcon,
+  Share as ShareIcon,
+  Trash as TrashIcon,
+} from "lucide-react";
 import { Textarea } from "./textarea";
 import { format } from "date-fns";
 import {
@@ -16,7 +21,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import api from "@/services/api";
-import { contentService } from '@/services/content.service';
+import { contentService } from "@/services/content.service";
 
 declare global {
   interface Window {
@@ -28,6 +33,11 @@ declare global {
     instgrm?: {
       Embeds: {
         process: (element?: HTMLElement | null) => void;
+      };
+    };
+    FB?: {
+      XFBML: {
+        parse: (element?: HTMLElement | null) => void;
       };
     };
   }
@@ -59,6 +69,48 @@ const extractLinkedInPostId = (url: string): string | null => {
   const regExp =
     /^https?:\/\/(?:www\.)?linkedin\.com\/(?:posts|feed\/update)\/(\d+)/;
   const match = url.match(regExp);
+  return match ? match[1] : null;
+};
+
+const extractMediumId = (url: string): string | null => {
+  const regex = /medium\.com\/(?:@[\w-]+\/)?([^?/]+)/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
+
+const extractGithubId = (url: string): string | null => {
+  const regex = /github\.com\/([^/]+\/[^/]+)/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
+
+const extractFigmaId = (url: string): string | null => {
+  const regex = /file\/([^/]+)/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
+
+const extractCodepenId = (url: string): string | null => {
+  const regex = /codepen\.io\/([^/]+\/pen\/[^/]+)/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
+
+const extractSpotifyId = (url: string): { type: string; id: string } | null => {
+  const regex = /spotify\.com\/(track|playlist|episode|show)\/([^?/]+)/;
+  const match = url.match(regex);
+  return match ? { type: match[1], id: match[2] } : null;
+};
+
+const extractMiroId = (url: string): string | null => {
+  const regex = /miro\.com\/app\/board\/([^/]+)/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
+
+const extractFacebookId = (url: string): string | null => {
+  const regex = /facebook\.com\/(?:[^/]+\/)?(?:posts|videos)\/(\d+)/;
+  const match = url.match(regex);
   return match ? match[1] : null;
 };
 
@@ -184,6 +236,118 @@ const PlatformIcon: React.FC<{ type: string }> = ({ type }) => {
         </svg>
       );
 
+      case "medium":
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-green-600"
+    >
+      <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zm7.42 0c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
+    </svg>
+  );
+
+case "github":
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-gray-900"
+    >
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/>
+    </svg>
+  );
+
+case "figma":
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-purple-600"
+    >
+      <path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539z"/>
+    </svg>
+  );
+
+case "codepen":
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-gray-900"
+    >
+      <path d="M24 8.182l-.018-.087-.017-.05c-.01-.024-.018-.05-.03-.075-.003-.018-.015-.034-.02-.05l-.035-.067-.03-.05-.044-.06-.046-.045-.06-.045-.046-.03-.06-.044-.044-.04-.015-.02L12.58.19c-.347-.232-.796-.232-1.142 0L.453 7.502l-.015.015-.044.035-.06.05-.038.04-.05.056-.037.045-.05.06c-.02.017-.03.03-.03.046l-.05.06-.02.06c-.02.01-.02.04-.03.07l-.01.05C0 8.12 0 8.15 0 8.18v7.497c0 .044.003.09.01.135l.01.046c.005.03.01.06.02.086l.015.05c.01.027.016.053.027.075l.022.05c0 .01.015.04.03.06l.03.04c.015.01.03.04.045.06l.03.04.04.04c.01.013.01.03.03.03l.06.042.04.03.01.014 10.97 7.33c.164.12.375.163.57.163s.39-.06.57-.18l10.99-7.28.014-.01.046-.037.06-.043.048-.036.052-.058.033-.045.04-.06.03-.05.03-.07.016-.052.03-.077.015-.045.03-.08v-7.5c0-.05 0-.095-.016-.14l-.014-.045.044.003zm-11.99 6.28l-3.65-2.44 3.65-2.442 3.65 2.44-3.65 2.44zm-1.216-6.18l-4.473 3.003-3.612-2.415L12.183 3.2v5.09zm-6.343 3.75l2.53 1.694-2.53 1.69v-3.38zm6.343 3.75V19l-9.3-6.212 3.61-2.41 5.69 3.806zm2.432 0l5.69-3.805 3.61 2.41L12.615 19v-5.09zm6.343-3.75v3.38l-2.53-1.69 2.53-1.694z"/>
+    </svg>
+  );
+
+case "googledocs":
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-blue-600"
+    >
+      <path d="M14.727 6.727H0V24h17.455V9.455L14.727 6.727zM3.879 19.395v-2.969h9.697v2.969H3.879zm9.697-4.848H3.879v-2.97h9.697v2.97zm0-4.849H3.879V6.727h9.697v2.971zM24 6.727l-6.545-6.545v6.545H24z"/>
+    </svg>
+  );
+
+case "spotify":
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-green-500"
+    >
+      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+    </svg>
+  );
+
+case "miro":
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-yellow-500"
+    >
+      <path d="M17.392 0H6.608C2.958 0 0 2.958 0 6.608v10.784C0 21.042 2.958 24 6.608 24h10.784C21.042 24 24 21.042 24 17.392V6.608C24 2.958 21.042 0 17.392 0zM12 18.4c-3.6 0-6.4-2.8-6.4-6.4S8.4 5.6 12 5.6s6.4 2.8 6.4 6.4-2.8 6.4-6.4 6.4z"/>
+    </svg>
+  );
+
+case "facebook":
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="text-blue-600"
+    >
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+  );
+
     case "default":
       return (
         <svg
@@ -214,13 +378,28 @@ interface EmbedProps {
     | "notion"
     | "eraser"
     | "excalidraw"
-    | "note";
+    | "note"
+    | "medium"
+    | "github"
+    | "figma"
+    | "codepen"
+    | "googledocs"
+    | "spotify"
+    | "miro"
+    | "facebook";
+
   link: string;
   title?: string;
   columns?: number;
   content?: string;
 }
-const Embed: React.FC<EmbedProps> = ({ type, link, title, columns = 3, content }) => {
+const Embed: React.FC<EmbedProps> = ({
+  type,
+  link,
+  title,
+  columns = 3,
+  content,
+}) => {
   const embedRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -310,7 +489,8 @@ const Embed: React.FC<EmbedProps> = ({ type, link, title, columns = 3, content }
               background: "#FFF",
               border: "0",
               borderRadius: "3px",
-              boxShadow: "0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)",
+              boxShadow:
+                "0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)",
               margin: "1px",
               maxWidth: "540px",
               minWidth: "326px",
@@ -378,50 +558,50 @@ const Embed: React.FC<EmbedProps> = ({ type, link, title, columns = 3, content }
                 <div style={{ padding: "19% 0" }}></div>
                 <div
                   style={{
-                  display: "block",
-                  height: "50px",
-                  margin: "0 auto 12px",
-                  width: "50px",
+                    display: "block",
+                    height: "50px",
+                    margin: "0 auto 12px",
+                    width: "50px",
                   }}
                 >
                   <svg
-                  width="50px"
-                  height="50px"
-                  viewBox="0 0 60 60"
-                  version="1.1"
-                  >
-                  <g
-                    stroke="none"
-                    strokeWidth="1"
-                    fill="none"
-                    fillRule="evenodd"
+                    width="50px"
+                    height="50px"
+                    viewBox="0 0 60 60"
+                    version="1.1"
                   >
                     <g
-                    transform="translate(-511.000000, -20.000000)"
-                    fill="#000000"
+                      stroke="none"
+                      strokeWidth="1"
+                      fill="none"
+                      fillRule="evenodd"
                     >
-                    <g>
-                      <path d="M556.869,30.41 C554.814,30.41 553.148,32.076 553.148,34.131 C553.148,36.186 554.814,37.852 556.869,37.852 C558.924,37.852 560.59,36.186 560.59,34.131 C560.59,32.076 558.924,30.41 556.869,30.41 M541,60.657 C535.114,60.657 530.342,55.887 530.342,50 C530.342,44.114 535.114,39.342 541,39.342 C546.887,39.342 551.658,44.114 551.658,50 C551.658,55.887 546.887,60.657 541,60.657 M541,33.886 C532.1,33.886 524.886,41.1 524.886,50 C524.886,58.899 532.1,66.113 541,66.113 C549.9,66.113 557.115,58.899 557.115,50 C557.115,41.1 549.9,33.886 541,33.886 M565.378,62.101 C565.244,65.022 564.756,66.606 564.346,67.663 C563.803,69.06 563.154,70.057 562.106,71.106 C561.058,72.155 560.06,72.803 558.662,73.347 C557.607,73.757 556.021,74.244 553.102,74.378 C549.944,74.521 548.997,74.552 541,74.552 C533.003,74.552 532.056,74.521 528.898,74.378 C525.979,74.244 524.393,73.757 523.338,73.347 C521.94,72.803 520.942,72.155 519.894,71.106 C518.846,70.057 518.197,69.06 517.654,67.663 C517.244,66.606 516.755,65.022 516.623,62.101 C516.479,58.943 516.448,57.996 516.448,50 C516.448,42.003 516.479,41.056 516.623,37.899 C516.755,34.978 517.244,33.391 517.654,32.338 C518.197,30.938 518.846,29.942 519.894,28.894 C520.942,27.846 521.94,27.196 523.338,26.654 C524.393,26.244 525.979,25.756 528.898,25.623 C532.057,25.479 533.004,25.448 541,25.448 C548.997,25.448 549.943,25.479 553.102,25.623 C556.021,25.756 557.607,26.244 558.662,26.654 C560.06,27.196 561.058,27.846 562.106,28.894 C563.154,29.942 563.803,30.938 564.346,32.338 C564.756,33.391 565.244,34.978 565.378,37.899 C565.522,41.056 565.552,42.003 565.552,50 C565.552,57.996 565.522,58.943 565.378,62.101 M570.82,37.631 C570.674,34.438 570.167,32.258 569.425,30.349 C568.659,28.377 567.633,26.702 565.965,25.035 C564.297,23.368 562.623,22.342 560.652,21.575 C558.743,20.834 556.562,20.326 553.369,20.18 C550.169,20.033 549.148,20 541,20 C532.853,20 531.831,20.033 528.631,20.18 C525.438,20.326 523.257,20.834 521.349,21.575 C519.376,22.342 517.703,23.368 516.035,25.035 C514.368,26.702 513.342,28.377 512.574,30.349 C511.834,32.258 511.326,34.438 511.181,37.631 C511.035,40.831 511,41.851 511,50 C511,58.147 511.035,59.17 511.181,62.369 C511.326,65.562 511.834,67.743 512.574,69.651 C513.342,71.625 514.368,73.296 516.035,74.965 C517.703,76.634 519.376,77.658 521.349,78.425 C523.257,79.167 525.438,79.673 528.631,79.82 C531.831,79.965 532.853,80.001 541,80.001 C549.148,80.001 550.169,79.965 553.369,79.82 C556.562,79.673 558.743,79.167 560.652,78.425 C562.623,77.658 564.297,76.634 565.965,74.965 C567.633,73.296 568.659,71.625 569.425,69.651 C570.167,67.743 570.674,65.562 570.82,62.369 C570.966,59.17 571,58.147 571,50 C571,41.851 570.966,40.831 570.82,37.631" />
+                      <g
+                        transform="translate(-511.000000, -20.000000)"
+                        fill="#000000"
+                      >
+                        <g>
+                          <path d="M556.869,30.41 C554.814,30.41 553.148,32.076 553.148,34.131 C553.148,36.186 554.814,37.852 556.869,37.852 C558.924,37.852 560.59,36.186 560.59,34.131 C560.59,32.076 558.924,30.41 556.869,30.41 M541,60.657 C535.114,60.657 530.342,55.887 530.342,50 C530.342,44.114 535.114,39.342 541,39.342 C546.887,39.342 551.658,44.114 551.658,50 C551.658,55.887 546.887,60.657 541,60.657 M541,33.886 C532.1,33.886 524.886,41.1 524.886,50 C524.886,58.899 532.1,66.113 541,66.113 C549.9,66.113 557.115,58.899 557.115,50 C557.115,41.1 549.9,33.886 541,33.886 M565.378,62.101 C565.244,65.022 564.756,66.606 564.346,67.663 C563.803,69.06 563.154,70.057 562.106,71.106 C561.058,72.155 560.06,72.803 558.662,73.347 C557.607,73.757 556.021,74.244 553.102,74.378 C549.944,74.521 548.997,74.552 541,74.552 C533.003,74.552 532.056,74.521 528.898,74.378 C525.979,74.244 524.393,73.757 523.338,73.347 C521.94,72.803 520.942,72.155 519.894,71.106 C518.846,70.057 518.197,69.06 517.654,67.663 C517.244,66.606 516.755,65.022 516.623,62.101 C516.479,58.943 516.448,57.996 516.448,50 C516.448,42.003 516.479,41.056 516.623,37.899 C516.755,34.978 517.244,33.391 517.654,32.338 C518.197,30.938 518.846,29.942 519.894,28.894 C520.942,27.846 521.94,27.196 523.338,26.654 C524.393,26.244 525.979,25.756 528.898,25.623 C532.057,25.479 533.004,25.448 541,25.448 C548.997,25.448 549.943,25.479 553.102,25.623 C556.021,25.756 557.607,26.244 558.662,26.654 C560.06,27.196 561.058,27.846 562.106,28.894 C563.154,29.942 563.803,30.938 564.346,32.338 C564.756,33.391 565.244,34.978 565.378,37.899 C565.522,41.056 565.552,42.003 565.552,50 C565.552,57.996 565.522,58.943 565.378,62.101 M570.82,37.631 C570.674,34.438 570.167,32.258 569.425,30.349 C568.659,28.377 567.633,26.702 565.965,25.035 C564.297,23.368 562.623,22.342 560.652,21.575 C558.743,20.834 556.562,20.326 553.369,20.18 C550.169,20.033 549.148,20 541,20 C532.853,20 531.831,20.033 528.631,20.18 C525.438,20.326 523.257,20.834 521.349,21.575 C519.376,22.342 517.703,23.368 516.035,25.035 C514.368,26.702 513.342,28.377 512.574,30.349 C511.834,32.258 511.326,34.438 511.181,37.631 C511.035,40.831 511,41.851 511,50 C511,58.147 511.035,59.17 511.181,62.369 C511.326,65.562 511.834,67.743 512.574,69.651 C513.342,71.625 514.368,73.296 516.035,74.965 C517.703,76.634 519.376,77.658 521.349,78.425 C523.257,79.167 525.438,79.673 528.631,79.82 C531.831,79.965 532.853,80.001 541,80.001 C549.148,80.001 550.169,79.965 553.369,79.82 C556.562,79.673 558.743,79.167 560.652,78.425 C562.623,77.658 564.297,76.634 565.965,74.965 C567.633,73.296 568.659,71.625 569.425,69.651 C570.167,67.743 570.674,65.562 570.82,62.369 C570.966,59.17 571,58.147 571,50 C571,41.851 570.966,40.831 570.82,37.631" />
+                        </g>
+                      </g>
                     </g>
-                    </g>
-                  </g>
                   </svg>
                 </div>
                 <div style={{ paddingTop: "8px" }}>
                   <div
-                  style={{
-                    color: "#3897f0",
-                    fontFamily: "Arial,sans-serif",
-                    fontSize: "14px",
-                    fontStyle: "normal",
-                    fontWeight: 550,
-                    lineHeight: "18px",
-                  }}
+                    style={{
+                      color: "#3897f0",
+                      fontFamily: "Arial,sans-serif",
+                      fontSize: "14px",
+                      fontStyle: "normal",
+                      fontWeight: 550,
+                      lineHeight: "18px",
+                    }}
                   >
-                  View this post on Instagram
+                    View this post on Instagram
                   </div>
                 </div>
-                </a>
+              </a>
             </div>
           </blockquote>
         </div>
@@ -558,11 +738,143 @@ const Embed: React.FC<EmbedProps> = ({ type, link, title, columns = 3, content }
     }
     case "note": {
       return (
-       <div className="w-full min-h-[100px] p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg">
-      <p className="text-gray-700 whitespace-pre-wrap">
-        {type === "note" ? content : link}
-      </p>
-    </div>
+        <div className="w-full min-h-[100px] p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg">
+          <p className="text-gray-700 whitespace-pre-wrap">
+            {type === "note" ? content : link}
+          </p>
+        </div>
+      );
+    }
+    case "medium": {
+      const postId = extractMediumId(link);
+      return (
+        <div className="w-full min-h-[200px] border rounded-lg overflow-hidden bg-white">
+          <iframe
+            src={`https://medium.com/media/${postId}?postId=${postId}`}
+            className="w-full h-[400px]"
+            title={title || "Medium Post"}
+          />
+        </div>
+      );
+    }
+
+    case "github": {
+      const repoId = extractGithubId(link);
+      return (
+        <div className="w-full border rounded-lg p-4 bg-white">
+          <div className="flex items-center gap-2 mb-4">
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12" />
+            </svg>
+            <span className="font-medium">{title || repoId}</span>
+          </div>
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-gray-900 text-white px-4 py-2 rounded-md inline-flex items-center hover:bg-gray-800"
+          >
+            View on GitHub
+          </a>
+        </div>
+      );
+    }
+
+    case "figma": {
+      const fileId = extractFigmaId(link);
+      return (
+        <div className="w-full aspect-video">
+          <iframe
+            src={`https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(
+              link
+            )}`}
+            className="w-full h-full rounded-xl"
+            allowFullScreen
+          />
+        </div>
+      );
+    }
+
+    case "codepen": {
+      const penId = extractCodepenId(link);
+      return (
+        <div className="w-full aspect-video">
+          <iframe
+            src={`https://codepen.io/embed/${penId}?default-tab=result`}
+            className="w-full h-full rounded-xl"
+            title={title || "CodePen Embed"}
+            allowTransparency={true}
+            allowFullScreen={true}
+          />
+        </div>
+      );
+    }
+
+    case "googledocs": {
+      return (
+        <div className="w-full min-h-[400px]">
+          <iframe
+            src={`${link.replace(/\/edit.*$/, "")}/preview`}
+            className="w-full h-[400px] rounded-xl"
+            title={title || "Google Doc"}
+          />
+        </div>
+      );
+    }
+
+    case "spotify": {
+      const spotifyData = extractSpotifyId(link);
+      return spotifyData ? (
+        <div className="w-full">
+          <iframe
+            src={`https://open.spotify.com/embed/${spotifyData.type}/${spotifyData.id}`}
+            width="100%"
+            height={spotifyData.type === "track" ? "80" : "380"}
+            frameBorder="0"
+            allow="encrypted-media"
+            className="rounded-xl"
+          />
+        </div>
+      ) : (
+        <div className="text-red-500">Invalid Spotify URL</div>
+      );
+    }
+
+    case "miro": {
+      const boardId = extractMiroId(link);
+      return (
+        <div className="w-full aspect-video">
+          <iframe
+            src={`https://miro.com/app/live-embed/${boardId}`}
+            frameBorder="0"
+            scrolling="no"
+            allowFullScreen
+            className="w-full h-full rounded-xl"
+          />
+        </div>
+      );
+    }
+
+    case "facebook": {
+      const postId = extractFacebookId(link);
+
+      React.useEffect(() => {
+        if (window.FB) {
+          window.FB.XFBML.parse();
+        }
+      }, [link]);
+
+      return postId ? (
+        <div className="w-full min-h-[300px] flex justify-center">
+          <div
+            className="fb-post"
+            data-href={link}
+            data-width="500"
+            data-show-text="true"
+          />
+        </div>
+      ) : (
+        <div className="text-red-500">Invalid Facebook URL</div>
       );
     }
     default:
@@ -673,7 +985,7 @@ export function SocialCard({
       onEdit?.(id, editedContent);
       setIsEditing(false);
     } catch (error) {
-      console.error('Failed to update content:', error);
+      console.error("Failed to update content:", error);
       toast.error("Failed to update content");
     }
   };
@@ -707,8 +1019,6 @@ export function SocialCard({
       setIsDeleting(false);
     }
   };
-
-  
 
   const copyLinkToClipboard = async () => {
     try {
@@ -811,8 +1121,8 @@ export function SocialCard({
                 placeholder="Write your note here..."
               />
             ) : (
-              <Embed 
-                type={type} 
+              <Embed
+                type={type}
                 link={link}
                 content={type === "note" ? editedContent : link} // Pass content here
                 title={title}
@@ -876,6 +1186,14 @@ function getPlatformStyles(type: string): string {
              hover:from-[#EC2C40]/20 hover:to-[#00A9E5]/20`,
     excalidraw: "bg-[#6965db]/10 border-[#6965db]/20 hover:bg-[#6965db]/20",
     note: "bg-gray-600/10 border-gray-600/20 hover:bg-gray-600/20",
+    medium: "bg-green-600/10 border-green-600/20 hover:bg-green-600/20",
+    github: "bg-gray-800/10 border-gray-900/20 hover:bg-gray-900/20",
+    figma: "bg-purple-600/10 border-purple-600/20 hover:bg-purple-600/20",
+    codepen: "bg-black/10 border-black/20 hover:bg-black/20",
+    googledocs: "bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20",
+    spotify: "bg-green-500/10 border-green-500/20 hover:bg-green-500/20",
+    miro: "bg-yellow-500/10 border-yellow-500/20 hover:bg-yellow-500/20",
+    facebook: "bg-blue-600/10 border-blue-600/20 hover:bg-blue-600/20"
   };
 
   return (
