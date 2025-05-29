@@ -1,27 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "./Card";
 import { 
-  LayoutDashboard, Layout, TrendingUp, Hash,
-  ThumbsUp, MessageCircle, Bookmark, Share2, PlusCircle, Tag,
+  LayoutDashboard, Layout, Share2, PlusCircle, Tag,
   Mail, MessageSquare, Send
 } from "lucide-react";
-import { WelcomeGuide } from './Welcome';
 import { SidebarTrigger } from './app-sidebar';
 import { Button } from './Button';
 import { Input } from './input';
-import { Label } from './label';
-import { Textarea } from './textarea';
-import { Illustration } from '@/assets/illustration';
 import { toast } from 'react-toastify';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
 
 // Define ContentItem interface for type safety
-interface ContentItem {
-  platform: string;
-  tags?: string[];
-  // Add other fields as needed, e.g. title, url, etc.
-}
 
 // Update PlatformStats interface
 interface PlatformStats {
@@ -66,27 +55,6 @@ interface StatsCardProps {
   gradient: string;
 }
 
-function StatsCard({ title, value, icon, gradient }: StatsCardProps) {
-  return (
-    <div className={cn(
-      "rounded-[20px] border border-white/30 bg-white/10 backdrop-blur-xl",
-      "p-6 transition-all duration-200"
-    )}>
-      <div className="flex items-center gap-4">
-        <div className="rounded-full bg-white/20 p-3">
-          {icon}
-        </div>
-        <div>
-          <h3 className="text-sm font-medium text-white/80">{title}</h3>
-          <p className="text-3xl font-bold text-white mt-1">
-            {/* Show loading state */}
-            {value}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Add new interface for guide cards
 interface GuideCardProps {
@@ -204,7 +172,6 @@ export function Dashboard() {
     facebook: 0
   });
   const [totalContent, setTotalContent] = useState(0);
-  const [activeTags, setActiveTags] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -228,14 +195,9 @@ export function Dashboard() {
           return acc;
         }, {});
 
-        // Calculate unique tags
-        const uniqueTags = new Set(
-          content.flatMap((item: any) => item.tags || [])
-        );
-
+  
         setPlatformCounts(counts);
         setTotalContent(content.length);
-        setActiveTags(uniqueTags.size);
       } catch (error) {
         console.error('Failed to fetch content:', error);
         toast.error('Failed to load dashboard data');
@@ -248,7 +210,7 @@ export function Dashboard() {
   }, []);
 
   // Update StatsCard to show loading state
-  function StatsCard({ title, value, icon, gradient }: StatsCardProps) {
+  function StatsCard({ title, value, icon,}: StatsCardProps) {
     return (
       <div className={cn(
         "rounded-[20px] border border-white/30 bg-white/10 backdrop-blur-xl",

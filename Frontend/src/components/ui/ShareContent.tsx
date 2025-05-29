@@ -15,7 +15,7 @@ interface ShareContentModalProps {
   contentId?: string;
 }
 
-export function  ShareContentModal({ isOpen, onClose, contentId }: ShareContentModalProps) {
+export function  ShareContentModal({ isOpen, onClose }: ShareContentModalProps) {
   const [shareLink, setShareLink] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
@@ -106,6 +106,4 @@ export function  ShareContentModal({ isOpen, onClose, contentId }: ShareContentM
   );
 }
 
-function generateShareLink() {
-  throw new Error('Function not implemented.');
-}
+

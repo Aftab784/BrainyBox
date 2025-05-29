@@ -1,0 +1,89 @@
+# Dependencies
+Frontend/node_modules/
+Backend/node_modules/
+**/node_modules/
+/.pnp
+.pnp.js
+
+# Environment files
+Frontend/.env
+Frontend/.env.local
+Frontend/.env.development.local
+Frontend/.env.test.local
+Frontend/.env.production.local
+Backend/.env
+Backend/.env.local
+Backend/.env.development
+Backend/.env.production
+
+# Testing
+/coverage
+Frontend/coverage/
+Backend/coverage/
+
+# Production
+Frontend/build/
+Frontend/dist/
+Backend/dist/
+Backend/build/
+**/dist
+**/build
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+**/debug.log
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Thumbs.db.DS_Store# System Files*.pid.lock*.seed*.pid*.log# OptionalBackend/.cache/Frontend/.cache/.eslintcache.npm# Cache directoriesBackend/**/*.tsbuildinfoFrontend/**/*.tsbuildinfo*.tsbuildinfo# TypeScript.vs/*.pem*.pem
+.vs/
+
+# TypeScript
+*.tsbuildinfo
+Frontend/**/*.tsbuildinfo
+Backend/**/*.tsbuildinfo
+
+# Cache directories
+.npm
+.eslintcache
+Frontend/.cache/
+Backend/.cache/
+
+# Optional
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# System Files
+.DS_Store
+Thumbs.db

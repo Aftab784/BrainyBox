@@ -5,7 +5,6 @@ import { Input } from './input';
 import { Label } from './label';
 import { Textarea } from './textarea'; // Import Textarea component
 import { toast } from 'sonner';
-import api from '@/services/api';
 import { Edit2 } from 'lucide-react'; // Import Edit2 icon
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
@@ -47,7 +46,6 @@ export function CreateContentModal({
   isOpen,
   onClose,
   onSubmit,
-  selectedType = null
 }: CreateContentModelProps) {
   const [title, setTitle] = React.useState('');
   const [type, setType] = React.useState('youtube');
@@ -68,11 +66,7 @@ export function CreateContentModal({
         content: type === 'note' ? content : link // Store content separately
       };
 
-      const response = await api.post('/api/v1/content', payload, {
-        headers: {
-          token: localStorage.getItem('token')
-        }
-      });
+      
 
       toast.success('Content added successfully!');
       onSubmit(payload); // Pass the full payload

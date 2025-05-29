@@ -2,7 +2,6 @@ import {
   Sidebar, 
   SidebarContent, 
   SidebarHeader,
-  SidebarFooter, 
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -12,14 +11,8 @@ import {
   SidebarSeparator,
   useSidebar
 } from "@/components/ui/Sidebar";
-import { Button } from "@/components/ui/Button";
 import logo from '../../assets/logo.svg';
-import * as React from "react"
-import YouTubeIcon from '../../assets/icons/youtube.svg';
-import LinkedInIcon from '../../assets/icons/linkedin.svg';
-import TwitterIcon from '../../assets/icons/twitter.svg';
-import InstagramIcon from '../../assets/icons/instagram.svg';
-import { LogOut, User, Menu } from 'lucide-react';
+import {  User, Menu } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useNavigate } from 'react-router-dom'
 import { authService } from '@/services/auth.service'

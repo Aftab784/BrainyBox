@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-import { User, LogOut, BookOpen, LayoutGrid, LayoutList, Edit2 } from "lucide-react";
+import { LayoutGrid, LayoutList, Edit2 } from "lucide-react";
 import { ShareIcon } from "@/icons/ShareIcon";
 import { PlusIcon } from "@/icons/PlusIcon";
 import {
@@ -11,13 +10,11 @@ import {
 } from "@/components/ui/Sidebar";
 import { AppSidebar } from "@/components/ui/app-sidebar";
 import { Dashboard } from "../components/ui/DashBoard";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { SocialCard, MasonryGrid } from "@/components/ui/Card";
 import { CreateContentModal } from "../components/ui/CreateContentModel";
 import { ShareContentModal } from "../components/ui/ShareContent";
 import { WelcomeGuide } from "@/components/ui/Welcome";
 import { Button } from "@/components/ui/Button";
-import { AtomIcon as PlatformIcon } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 import { contentService } from '@/services/content.service';
 
@@ -257,13 +254,17 @@ const ContentPage: React.FC = () => {
 
               {/* Content Section */}
               <div className="max-w-7xl mx-auto p-4">
-                {filteredContent.length === 0 && !activeFilter ? (
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
+                  </div>
+                ) : filteredContent.length === 0 && !activeFilter ? (
                   <WelcomeGuide />
                 ) : (
-                  <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                  <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 w-full">
                     {isMobile || layout === "list" ? (
                       <div className="flex flex-col gap-4">
-                        {filteredContent.map((item, index) => (
+                        {filteredContent.map((item) => (
                           <SocialCard
                             key={item._id}
                             id={item._id}
@@ -280,21 +281,22 @@ const ContentPage: React.FC = () => {
                       </div>
                     ) : (
                       <MasonryGrid 
-                        columns={isMobile ? 1 : columns} 
-                        gap={isMobile ? 4 : 6}
+                        columns={columns} 
+                        gap={6}
+                        className="w-full"
                       >
-                        {filteredContent.map((item, index) => (
+                        {filteredContent.map((item) => (
                           <SocialCard
                             key={item._id}
                             id={item._id}
                             type={item.type}
                             link={item.link}
                             title={item.title}
-                            content={item.content || item.link} // Update this line
+                            content={item.content || item.link}
                             createdAt={item.createdAt || new Date().toISOString()}
                             onDelete={handleDelete}
-                            onEdit={handleEdit} // Add this
-                            className="w-full"
+                            onEdit={handleEdit}
+                            className="w-full" // Make sure cards take full width
                           />
                         ))}
                       </MasonryGrid>
@@ -330,41 +332,6 @@ const ContentPage: React.FC = () => {
 };
 
 // SocialCard wrapper component
-const SocialCardWrapper = ({ type, link, title, tags, className, ...props }: any) => {
-  function cn(...classes: (string | undefined | false | null)[]): string {
-    return classes.filter(Boolean).join(" ");
-  }
-  
-  return (
-    <Card 
-      className={cn("break-inside-avoid w-full transition-all duration-200", className)} 
-      {...props}
-    >
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <CardTitle className="flex items-center gap-2 flex-1 min-w-0">
-          <PlatformIcon type={type} />
-          <span className="truncate">{title}</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="aspect-video sm:aspect-auto">
-          {/* Content rendering */}
-        </div>
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {tags.map((tag: string, idx: number) => (
-              <span
-                key={idx}
-                className="text-xs px-2 py-1 rounded-md bg-purple-100 text-purple-700"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
+
 
 export default ContentPage;

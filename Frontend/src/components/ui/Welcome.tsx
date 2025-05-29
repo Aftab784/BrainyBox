@@ -1,12 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { X, Check, Sparkles, BookOpen, Tag, Search } from 'lucide-react';
-
-interface Step {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-}
-
 export function WelcomeGuide() {
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center">

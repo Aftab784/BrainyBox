@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { SocialCard, MasonryGrid } from '@/components/ui/Card';
 import { Grid, List } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { contentService } from '@/services/content.service';
 
 interface ContentItem {
