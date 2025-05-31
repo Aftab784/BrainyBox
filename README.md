@@ -1,6 +1,6 @@
-# BrainBox - Your Second Brain App 🧠
+# BrainyBox - Your Second Brain App 🧠
 
-BrainBox is a modern web application that helps you organize and manage your digital content from various platforms in one centralized location. Think of it as your second brain where you can store, organize, and share content from YouTube, Twitter, Instagram, LinkedIn, Notion, and more.
+BrainyBox is a modern web application that helps you organize and manage your digital content from various platforms in one centralized location. Think of it as your second brain where you can store, organize, and share content from YouTube, Twitter, Instagram, LinkedIn, Notion, and more.
 
 ## 🌟 Features
 
