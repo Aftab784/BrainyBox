@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Eye, EyeOff } from "lucide-react" // Add this import
 import { useNavigate, Link } from "react-router-dom"
 import { toast } from "sonner"
 import { authService } from "@/services/auth.service"
@@ -14,6 +15,7 @@ export function LoginForm({
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false) // Add this state
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,14 +60,27 @@ export function LoginForm({
           className="h-12 bg-white/20 border border-white/30 text-white placeholder:text-white/60 rounded-lg"
           required
         />
-        <Input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="h-12 bg-white/20 border border-white/30 text-white placeholder:text-white/60 rounded-lg"
-          required
-        />
+        <div className="relative">
+          <Input
+            type={showPassword ? "text" : "password"} // Toggle between text and password
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="h-12 bg-white/20 border border-white/30 text-white placeholder:text-white/60 rounded-lg"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3"
+          >
+            {showPassword ? (
+              <EyeOff className="w-5 h-5 text-white/60" />
+            ) : (
+              <Eye className="w-5 h-5 text-white/60" />
+            )}
+          </button>
+        </div>
 
         <Button
           type="submit"

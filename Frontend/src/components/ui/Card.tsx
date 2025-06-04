@@ -101,16 +101,28 @@ const extractSpotifyId = (url: string): { type: string; id: string } | null => {
 };
 
 const extractMiroId = (url: string): string | null => {
-  const regex = /miro\.com\/app\/board\/([^/]+)/;
+  const regex = /miro\.com\/app\/board\/([^/?#]+)/;
   const match = url.match(regex);
   return match ? match[1] : null;
 };
 
+
 const extractFacebookId = (url: string): string | null => {
-  const regex = /facebook\.com\/(?:[^/]+\/)?(?:posts|videos)\/(\d+)/;
-  const match = url.match(regex);
-  return match ? match[1] : null;
+  const patterns = [
+    /facebook\.com\/[^/]+\/(?:posts|videos)\/(\d+)/,              // username/posts/id or videos/id
+    /facebook\.com\/story\.php\?story_fbid=(\d+)/,                // story.php?story_fbid=...
+    /facebook\.com\/permalink\.php\?story_fbid=(\d+)&id=\d+/,     // permalink.php
+    /facebook\.com\/share\/(?:r\/)?([^/?#]+)/                     // short links like /share/r/abc123 or /share/abc123
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+
+  return null;
 };
+
 
 //* Platform icons
 
@@ -764,7 +776,7 @@ const Embed: React.FC<EmbedProps> = ({
         <div className="w-full border rounded-lg p-4 bg-white">
           <div className="flex items-center gap-2 mb-4">
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12" />
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/>
             </svg>
             <span className="font-medium">{title || repoId}</span>
           </div>
@@ -855,27 +867,110 @@ const Embed: React.FC<EmbedProps> = ({
     }
 
     case "facebook": {
-      const postId = extractFacebookId(link);
+  const postId = extractFacebookId(link);
+  const isShortShareLink = /facebook\.com\/share\/(?:r\/)?([^/?#]+)/.test(link);
+  const [postError, setPostError] = useState(false);
 
-      React.useEffect(() => {
-        if (window.FB) {
-          window.FB.XFBML.parse();
-        }
-      }, [link]);
+  React.useEffect(() => {
+    if (!isShortShareLink && !(window as any).FB) {
+      const script = document.createElement('script');
+      script.src = 'https://connect.facebook.net/en_US/sdk.js';
+      script.async = true;
+      script.defer = true;
+      script.crossOrigin = 'anonymous';
+      document.body.appendChild(script);
 
-      return postId ? (
+      script.onload = () => {
+        (window as any).FB.init({
+          xfbml: true,
+          version: 'v18.0'
+        });
+
+        (window as any).FB.Event.subscribe('xfbml.render', function () {
+          setTimeout(() => {
+            const fbIframe = document.querySelector('.fb_iframe_widget iframe');
+            const iframeHeight = fbIframe?.clientHeight;
+            // If iframe height is too small, likely there's an error
+            if (iframeHeight && iframeHeight < 100) {
+              setPostError(true);
+            }
+          }, 2000);
+        });
+      };
+    }
+
+    return () => {
+      const fbRoot = document.getElementById('fb-root');
+      if (fbRoot) fbRoot.remove();
+    };
+  }, [postId, isShortShareLink]);
+
+  if (isShortShareLink || !postId) {
+    return (
+      <div className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border border-gray-200">
+        <p className="text-gray-600 mb-2">
+          This Facebook link can’t be embedded but you can still view it:
+        </p>
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 font-medium hover:underline"
+        >
+          View on Facebook
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full min-h-[150px]">
+      {postError ? (
+        <div className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-3 mb-4">
+            <svg className="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <div className="text-lg font-medium text-gray-900">Post Unavailable</div>
+          </div>
+          <p className="text-gray-600 text-center mb-4">
+            This Facebook post is no longer available. It may have been removed or the privacy settings have changed.
+          </p>
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <span>View on Facebook</span>
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <path d="M15 3h6v6" />
+              <path d="M10 14L21 3" />
+            </svg>
+          </a>
+        </div>
+      ) : (
         <div className="w-full min-h-[300px] flex justify-center">
           <div
             className="fb-post"
             data-href={link}
             data-width="500"
             data-show-text="true"
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              marginBottom: '16px'
+            }}
           />
+          <div id="fb-root"></div>
         </div>
-      ) : (
-        <div className="text-red-500">Invalid Facebook URL</div>
-      );
-    }
+      )}
+    </div>
+  );
+}
+
     default:
       return <div className="text-red-500">Unsupported embed type.</div>;
   }

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Eye, EyeOff, Check, AlertCircle } from "lucide-react"
 import { useNavigate, Link } from "react-router-dom"
 import { toast } from "sonner"
 import { authService } from "@/services/auth.service"
@@ -13,6 +14,30 @@ interface FormErrors {
   general?: string
 }
 
+const validatePassword = (password: string): string[] => {
+  const errors: string[] = []
+
+  if (password.length < 8) {
+    errors.push("Password must be at least 8 characters long")
+  }
+  if (!/[A-Z]/.test(password)) {
+    errors.push("Password must contain at least one uppercase letter")
+  }
+  if (!/[a-z]/.test(password)) {
+    errors.push("Password must contain at least one lowercase letter")
+  }
+  if (!/[0-9]/.test(password)) {
+    errors.push("Password must contain at least one number")
+  }
+  if (!/[!@#$%^&*]/.test(password)) {
+    errors.push(
+      "Password must contain at least one special character (!@#$%^&*)"
+    )
+  }
+
+  return errors
+}
+
 export function SignupForm({
   className,
   ...props
@@ -23,12 +48,17 @@ export function SignupForm({
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
+  const [showPassword, setShowPassword] = useState(false)
+  const [passwordFocused, setPasswordFocused] = useState(false)
 
   const validateForm = () => {
     const newErrors: FormErrors = {}
-    if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
+    const passwordErrors = validatePassword(password)
+
+    if (passwordErrors.length > 0) {
+      newErrors.password = passwordErrors.join("\n")
     }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -88,17 +118,94 @@ export function SignupForm({
             required
           />
 
-          <div>
+          <div className="relative">
             <Input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-12 bg-white/20 border border-white/30 text-white placeholder:text-white/60 rounded-lg"
+              onFocus={() => setPasswordFocused(true)}
+              onBlur={() => setPasswordFocused(false)}
+              className="h-12 bg-white/20 border border-white/30 text-white placeholder:text-white/60 rounded-lg pr-10"
               required
             />
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </button>
+            {passwordFocused && (
+              <div className="absolute z-10 w-full p-4 mt-2 bg-white rounded-lg shadow-lg">
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2 text-sm">
+                    {password.length >= 8 ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <span
+                      className={
+                        password.length >= 8 ? "text-green-500" : "text-red-500"
+                      }
+                    >
+                      Password must be at least 8 characters long
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    {/[A-Z]/.test(password) ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <span
+                      className={
+                        /[A-Z]/.test(password) ? "text-green-500" : "text-red-500"
+                      }
+                    >
+                      Password must contain at least one uppercase letter
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    {/[0-9]/.test(password) ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <span
+                      className={
+                        /[0-9]/.test(password) ? "text-green-500" : "text-red-500"
+                      }
+                    >
+                      Password must contain at least one number
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    {/[!@#$%^&*]/.test(password) ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <span
+                      className={
+                        /[!@#$%^&*]/.test(password) ? "text-green-500" : "text-red-500"
+                      }
+                    >
+                      Password must contain at least one special character (!@#$%^&*)
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            )}
+            {errors.password && !passwordFocused && (
+              <p className="text-red-500 text-sm mt-1 whitespace-pre-line">
+                {errors.password}
+              </p>
             )}
           </div>
         </div>
